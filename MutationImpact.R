@@ -34,6 +34,7 @@ distance <- function(ff1, ff2){
 	#Calculates the absolute distance matrix
 	D <- abs(As-Bs)
 
+	#Calculates the distance score
 	dist <- sqrt(sum(D^2))
 }
 
@@ -42,5 +43,18 @@ SecStructure <- function(seq){
 }
 
 Weight <- function(Structure){
-	
+	#The function takes a a string vector for the protein secondary structure as argument and returns a vector with weights for each position in the AA-sequence
+	weight <- (1:length(Structure))
+	position_nr <- 1
+
+	for(position in Structure){
+		if(position == 'C'){
+			weight[position_nr] <- 1
+		}
+		else{
+			weight[position_nr] <- 1.5
+		}
+		position_nr <- position_nr + 1
+	}
+	weight
 }
