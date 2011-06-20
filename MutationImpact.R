@@ -9,13 +9,18 @@ Main <- function(ff1, ff2){
 	protA_SecondaryStructure <- SecStructure(protA[[1]]$seq)
 	
 	#Calculates the weight vector
-	W = Weight(protA_SecondaryStructure[[1]]$PSIPRED$SecondaryStructure, protA_SecondaryStructure[[1]]$PSIPRED$ConfidenceScore)
+	W <- Weight(protA_SecondaryStructure[[1]]$PSIPRED$SecondaryStructure, protA_SecondaryStructure[[1]]$PSIPRED$ConfidenceScore)
 	
 	#Calculates the distance between the two sequences
-	dist <- distance(protA[[1]]$seq, protB[[1]]$seq, W)
+	dist <- Distance(protA[[1]]$seq, protB[[1]]$seq, W)
+	
+	aligned <- Align(protA[[1]]$seq, protB[[1]]$seq)
+	
+	print(aligned)
+	paste("The distance between the sequences: ", dist)
 }
 
-distance <- function(seqA, seqB, W){
+Distance <- function(seqA, seqB, W){
 	#Collects physicochemical descriptors for protA from aaIndex database
 	seqA_RADA880102 <- featureAAindex(seqA, aaindex.name="RADA880102") 
 	seqA_FAUJ880103 <- featureAAindex(seqA, aaindex.name="FAUJ880103")
@@ -35,14 +40,18 @@ distance <- function(seqA, seqB, W){
 	seqB_CHAM820102 <- featureAAindex(seqB, aaindex.name="CHAM820102")
 
 	#Concatenates the vectors with physicochemical descriptors into two matrices corresponding to seqA and seqB
-	As <- rbind(protA_RADA880102, protA_FAUJ880103, protA_ZIMJ680104, protA_GRAR740102, protA_CRAJ730103, protA_BURA740101, protA_CHAM820102)
-	Bs <- rbind(protB_RADA880102, protB_FAUJ880103, protB_ZIMJ680104, protB_GRAR740102, protB_CRAJ730103, protB_BURA740101, protB_CHAM820102)
+	As <- rbind(seqA_RADA880102, seqA_FAUJ880103, seqA_ZIMJ680104, seqA_GRAR740102, seqA_CRAJ730103, seqA_BURA740101, seqA_CHAM820102)
+	Bs <- rbind(seqB_RADA880102, seqB_FAUJ880103, seqB_ZIMJ680104, seqB_GRAR740102, seqB_CRAJ730103, seqB_BURA740101, seqB_CHAM820102)
 
 	#Calculates the absolute distance matrix
 	D <- abs(As-Bs)
 
-	#Calculates the distance score
-	dist <- sqrt(sum(W*t(D^2)))
+	#Calculates the distance scores
+	property_distances <- t(t(D)*W)
+	property_scores <- sqrt(rowSums(t(t(D^2)*W)))
+	merged_prop_distances <- colSums(distances)
+	#merged_score <- 
+	TotalScore <- sqrt(sum(t(D^2)*W))
 }
 
 SecStructure <- function(seq){
@@ -65,4 +74,8 @@ Weight <- function(Structure, Confidence){
 		position_nr <- position_nr + 1
 	}
 	weight
+}
+
+Align <- function(seqA, seqB){
+	pairwiseAlignment(pattern = seqA, subject = seqB, substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
 }
