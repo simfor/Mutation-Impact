@@ -16,8 +16,8 @@ Main <- function(ff1, ff2){
 	
 	aligned <- Align(protA[[1]]$seq, protB[[1]]$seq)
 	
-	print(aligned)
-	paste("The distance between the sequences: ", dist)
+	#print(aligned)
+	#paste("The distance between the sequences: ", dist)
 }
 
 Distance <- function(seqA, seqB, W){
@@ -81,3 +81,18 @@ Weight <- function(Structure, Confidence){
 Align <- function(seqA, seqB){
 	pairwiseAlignment(pattern = seqA, subject = seqB, substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
 }
+
+Visualize <- function(dist){
+	length <- c(1:length(dist$merged_prop_distances))
+	plot(length, dist$merged_prop_distances, type="l", xlab="position", ylab="distance")
+	points(length, dist$property_distances[1,], pch=1, col="blue")
+	points(length, dist$property_distances[2,], pch=2, col="blue")
+	points(length, dist$property_distances[3,], pch=3, col="blue")
+	points(length, dist$property_distances[4,], pch=4, col="blue")
+	points(length, dist$property_distances[5,], pch=5, col="blue")
+	points(length, dist$property_distances[6,], pch=6, col="blue")
+	points(length, dist$property_distances[7,], pch=7, col="blue")
+}
+
+
+
