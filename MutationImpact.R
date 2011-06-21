@@ -49,9 +49,11 @@ Distance <- function(seqA, seqB, W){
 	#Calculates the distance scores
 	property_distances <- t(t(D)*W)
 	property_scores <- sqrt(rowSums(t(t(D^2)*W)))
-	merged_prop_distances <- colSums(distances)
-	#merged_score <- 
+	merged_prop_distances <- colSums(property_distances)
+	merged_score <- sqrt(sum(t(t(merged_prop_distances^2))))
 	TotalScore <- sqrt(sum(t(D^2)*W))
+	
+	Result <- list(property_distances=property_distances, property_scores=property_scores, merged_prop_distances=merged_prop_distances, merged_score=merged_score, TotalScore=TotalScore)
 }
 
 SecStructure <- function(seq){
