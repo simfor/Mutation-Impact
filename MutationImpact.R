@@ -5,16 +5,19 @@ Main <- function(ff1, ff2){
 	protA <- readFASTA(ff1, strip.descs=TRUE)
 	protB <- readFASTA(ff2, strip.descs=TRUE)
 	
+	aligned <- Align(protA[[1]]$seq, protB[[1]]$seq)
+	
 	#Retrieves the secondary structure for protA
-	protA_SecondaryStructure <- SecStructure(protA[[1]]$seq)
+	protA_SecondaryStructure <- SecStructure(protA[[1]]$seq, strsplit(toString(pattern(aligned)), "")[[1]] )
 	
 	#Calculates the weight vector
 	W <- Weight(protA_SecondaryStructure[[1]]$PSIPRED$SecondaryStructure, protA_SecondaryStructure[[1]]$PSIPRED$ConfidenceScore)
 	
+	#Converts the alignment sequences to string vectors
+	
+	
 	#Calculates the distance between the two sequences
 	dist <- Distance(protA[[1]]$seq, protB[[1]]$seq, W)
-	
-	aligned <- Align(protA[[1]]$seq, protB[[1]]$seq)
 	
 	#print(aligned)
 	#paste("The distance between the sequences: ", dist)
@@ -56,8 +59,24 @@ Distance <- function(seqA, seqB, W){
 	Result <- list(property_distances=property_distances, property_scores=property_scores, merged_prop_distances=merged_prop_distances, merged_score=merged_score, TotalScore=TotalScore)
 }
 
-SecStructure <- function(seq){
+SecStructure <- function(seq, seq_align){
 	Structure <- predictPROTEUS(seq, proteus2.organism="euk")
+	seq_2D <- as.character((1:length(seq_align)))
+	position_nr <- 1
+	gap <- 0
+	
+	#Insertion of gaps in the 2D-structure matching the gaps in seq_align
+	for(position in seq_align){
+		if(position != '-'){
+			seq_2D[position_nr] <- Structure[[1]]$PSIPRED$SecondaryStructure[position_nr - gap]
+		}
+		else{
+			seq_2D[position_nr] <- "-"
+			gap <- gap + 1
+		}
+		position_nr <- position_nr + 1
+	}
+	list(seq_2D, Structure)
 }
 
 Weight <- function(Structure, Confidence){
@@ -79,7 +98,12 @@ Weight <- function(Structure, Confidence){
 }
 
 Align <- function(seqA, seqB){
-	pairwiseAlignment(pattern = seqA, subject = seqB, substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
+	aligned <- pairwiseAlignment(pattern = seqA, subject = seqB, type="local", substitutionMatrix = "BLOSUM50", gapOpening = -5, gapExtension = -1)
+	
+#	seqA_align <- strsplit(toString(pattern(aligned)), "")
+#	seqB_align <- strsplit(toString(subject(aligned)), "")
+	
+#	list()
 }
 
 Visualize <- function(dist){
