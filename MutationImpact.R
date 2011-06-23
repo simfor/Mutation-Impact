@@ -1,5 +1,6 @@
 library(BioSeqClass)
 library(Biostrings)
+library(gplots)
 
 Main <- function(ff1, ff2){
 	protA <- readFASTA(ff1, strip.descs=TRUE)
@@ -17,6 +18,10 @@ Main <- function(ff1, ff2){
 	#Calculates the distance between the two sequences
 	#dist <- Distance(protA[[1]]$seq, protB[[1]]$seq, W)
 	dist <- Distance(toString(pattern(aligned)), toString(subject(aligned)), W)
+	
+	#Result
+	Visualize(toString(pattern(aligned)), toString(subject(aligned)), dist)
+	dist
 	
 	#print(aligned)
 	#paste("The distance between the sequences: ", dist)
@@ -115,16 +120,48 @@ Align <- function(seqA, seqB){
 #	list()
 }
 
-Visualize <- function(dist){
+Visualize <- function(pattern, subject, dist){
 	length <- c(1:length(dist$merged_prop_distances))
-	plot(length, dist$merged_prop_distances, type="l", xlab="position", ylab="distance")
-	points(length, dist$property_distances[1,], pch=1, col="blue")
-	points(length, dist$property_distances[2,], pch=2, col="blue")
-	points(length, dist$property_distances[3,], pch=3, col="blue")
-	points(length, dist$property_distances[4,], pch=4, col="blue")
-	points(length, dist$property_distances[5,], pch=5, col="blue")
-	points(length, dist$property_distances[6,], pch=6, col="blue")
-	points(length, dist$property_distances[7,], pch=7, col="blue")
+	plot_colors <- c("black","blue","red","forestgreen","yellow","green","magenta","burlywood3")
+	plot_names <- c("Sum of all properties","Transfer free energy from octanol to water", "Normalized van der Waals volume", "Isoelectric point", "Polarity", "Normalized frequency of turn", "Normalized frequency of alpha-helix", "Free energy of solution in water")
+	
+#	par(mfrow=c(2,1))
+#	layout(matrix(c(1,1,2,2), 2, 2, byrow = TRUE), heights=c(1,3) )
+	
+#	text(1,1,subject)
+
+	par(fig=c(0,1,0,0.9))
+	plot(length, dist$merged_prop_distances, type="l", col=plot_colors[1], axes=FALSE, ann=FALSE)
+	
+	axis(1, at=1:length(dist$merged_prop_distances))
+	axis(2, at=1:max(dist$merged_prop_distances))
+	title(xlab="Position", col.lab=rgb(0,0.5,0))
+	title(ylab="Distance", col.lab=rgb(0,0.5,0))
+
+#	points(length, dist$property_distances[1,], pch=1, col="blue")
+#	points(length, dist$property_distances[2,], pch=2, col="blue")
+#	points(length, dist$property_distances[3,], pch=3, col="blue")
+#	points(length, dist$property_distances[4,], pch=4, col="blue")
+#	points(length, dist$property_distances[5,], pch=5, col="blue")
+#	points(length, dist$property_distances[6,], pch=6, col="blue")
+#	points(length, dist$property_distances[7,], pch=7, col="blue")
+
+	lines(length, dist$property_distances[1,], lty=2, col=plot_colors[2]) # pch=22, 
+	lines(length, dist$property_distances[2,], lty=2, col=plot_colors[3])
+	lines(length, dist$property_distances[3,], lty=2, col=plot_colors[4])
+	lines(length, dist$property_distances[4,], lty=2, col=plot_colors[5])
+	lines(length, dist$property_distances[5,], lty=2, col=plot_colors[6])
+	lines(length, dist$property_distances[6,], lty=2, col=plot_colors[7])
+	lines(length, dist$property_distances[7,], lty=2, col=plot_colors[8])
+	
+	legend(1, 23, plot_names, cex=0.8, col=plot_colors, lty=c(1,2,2,2,2,2,2,2), bty="n" )
+	
+	par(fig=c(0,1,0.75,0.8), cex=0.4, new=TRUE)
+#	textplot(c(pattern,subject), halign="center")
+	axis(1, at=1:length(pattern), lab=pattern)
+	
+	par(fig=c(0,1,0.9,1), cex=0.4, new=TRUE)
+	axis(1, at=1:length(pattern), lab=subject, line=NA)
 }
 
 
