@@ -1,6 +1,6 @@
 library(BioSeqClass)
 library(Biostrings)
-library(gplots)
+#library(gplots)
 
 Main <- function(ff1, ff2){
 	protA <- readFASTA(ff1, strip.descs=TRUE)
@@ -20,7 +20,7 @@ Main <- function(ff1, ff2){
 	dist <- Distance(toString(pattern(aligned)), toString(subject(aligned)), W)
 	
 	#Result
-	Visualize(toString(pattern(aligned)), toString(subject(aligned)), dist)
+	Visualize(strsplit(toString(pattern(aligned)), "")[[1]], strsplit(toString(subject(aligned)), "")[[1]], dist)
 	dist
 	
 	#print(aligned)
@@ -130,7 +130,7 @@ Visualize <- function(pattern, subject, dist){
 	
 #	text(1,1,subject)
 
-	par(fig=c(0,1,0,0.9))
+	par(fig=c(0,1,0.1,1), cex=0.8, cex.axis=0.9)
 	plot(length, dist$merged_prop_distances, type="l", col=plot_colors[1], axes=FALSE, ann=FALSE)
 	
 	axis(1, at=1:length(dist$merged_prop_distances))
@@ -154,14 +154,21 @@ Visualize <- function(pattern, subject, dist){
 	lines(length, dist$property_distances[6,], lty=2, col=plot_colors[7])
 	lines(length, dist$property_distances[7,], lty=2, col=plot_colors[8])
 	
-	legend(1, 23, plot_names, cex=0.8, col=plot_colors, lty=c(1,2,2,2,2,2,2,2), bty="n" )
+	x_legend2 <- length(dist$merged_prop_distances)/3
 	
-	par(fig=c(0,1,0.75,0.8), cex=0.4, new=TRUE)
+	legend(1, 20, plot_names, cex=0.8, col=plot_colors, title="Properties", lty=c(1,2,2,2,2,2,2,2), bty="n") # "topleft"
+	legend(x_legend2, 20, c(dist$merged_score, dist$property_scores), title="Total", cex=0.8, bty="n") # "topright"
+	
+	par(fig=c(0,1,0.01,0.05), cex=0.4, new=TRUE)
 #	textplot(c(pattern,subject), halign="center")
-	axis(1, at=1:length(pattern), lab=pattern)
+	axis(1, at=1:length(pattern), lab=subject, lty=0)
+#	title(sub="Mutated sequence")
+	mtext("Mutated sequence", 1, cex=0.6)
 	
-	par(fig=c(0,1,0.9,1), cex=0.4, new=TRUE)
-	axis(1, at=1:length(pattern), lab=subject, line=NA)
+	par(fig=c(0,1,0,0.1), cex=0.4, new=TRUE)
+	axis(1, at=1:length(pattern), lab=pattern, tck=-2)
+#	title(xlab="Ref. sequence")
+	mtext("Ref. sequence", 1, cex=0.6)
 }
 
 
