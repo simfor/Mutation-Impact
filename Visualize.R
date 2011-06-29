@@ -2,8 +2,8 @@ library(tkrplot)
 library(BioSeqClass)
 library(Biostrings)
 
-pattern <- strsplit(toString(pattern(align_O00198_insert)), "")[[1]]
-subject <- strsplit(toString(subject(align_O00198_insert)), "")[[1]]
+#pattern <- strsplit(toString(pattern(align_O00198_insert)), "")[[1]]
+#subject <- strsplit(toString(subject(align_O00198_insert)), "")[[1]]
 
 Visualize <- function(pattern, subject, dist){
 
@@ -21,7 +21,8 @@ Visualize <- function(pattern, subject, dist){
 	}
 
 
-	Visualize_test <- function(){
+	Visualize_test <- function(){ 
+		#The new left and right margins when scrolling
 		lleft <- as.numeric(tclvalue(left))
 	      	rright <- as.numeric(tclvalue(right))
 		
@@ -37,15 +38,18 @@ Visualize <- function(pattern, subject, dist){
 	#	dev.off()
 	#	x11(width=12, height=9)
 	#	resize.win(12,9)
-
+		
+		#The graphical parameters for the distance plot
 		par(fig=c(0,1,0.13,1), cex=0.7, cex.axis=0.9 )#mar=c(3.0, 3.0, 1.5, 1.5)
+		#Plots the sum of distances
 		plot(x, dist$merged_prop_distances[x], type="l", col=plot_colors[1], axes=FALSE, ann=FALSE, xlim=range(x))
 	
 		axis(1, at=min(x):max(x))
 		axis(2, at=0:max(dist$merged_prop_distances))
 		title(xlab="Position", col.lab=rgb(0,0.5,0))
 		title(ylab="Distance", col.lab=rgb(0,0.5,0))
-
+		
+		#Adds the different distances to the plot
 		lines(x, dist$property_distances[1,][x], lty=2, col=plot_colors[2])
 		lines(x, dist$property_distances[2,][x], lty=2, col=plot_colors[3])
 		lines(x, dist$property_distances[3,][x], lty=2, col=plot_colors[4])
@@ -54,53 +58,47 @@ Visualize <- function(pattern, subject, dist){
 		lines(x, dist$property_distances[6,][x], lty=2, col=plot_colors[7])
 		lines(x, dist$property_distances[7,][x], lty=2, col=plot_colors[8])
 
+		#The distance between the two legends
 		x_legend2 <- length(x)/1.5
-
+		
 		legend(lleft, max(dist$merged_prop_distances[x]), plot_names, cex=0.8, col=plot_colors, title="Properties", lty=c(1,2,2,2,2,2,2,2), bty="n") #"topleft"
 		legend(lleft + x_legend2, max(dist$merged_prop_distances[x]), c(dist$merged_score, dist$property_scores), title="Total", cex=0.8, bty="n") #"topright"
 
+		#The graphical parameters for the mutated sequence
 		par(fig=c(0,1,0.01,0.05), cex=0.6, new=TRUE)
-	#	textplot(c(pattern,subject), halign="center")
+		#Adds the mutated sequence
 		axis(1, at=min(x):max(x), lab=subject[x], lty=0) #
-	#	title(sub="Mutated sequence")
 		mtext("Mutated sequence", 1, cex=0.6)
 
+		#The graphical parameters for the reference sequence
 		par(fig=c(0,1,0,0.1), cex=0.6, new=TRUE)
+		#Adds the reference sequence
 		axis(1, at=min(x):max(x), lab=pattern[x]) #tck=-0.1
-	#	title(xlab="Ref. sequence")
 		mtext("Ref. sequence", 1, cex=0.6, line=2)
 	}
 
 	img <- tkrplot(tt, Visualize_test)
 
-	f2 <- function(...){
-	#        ol <- as.numeric(tclvalue(oldleft))
-	#        tclvalue(oldleft) <- tclvalue(left)
-	#        r <- as.numeric(tclvalue(right))
-	#        tclvalue(right) <- as.character(r + as.numeric(...) - ol)
+	scroll <- function(...){
 		tkrreplot(img)
 	}
 
-	#f3 <- function(...){
-	#	ol <- as.numeric(tclvalue(oldright))
-	#        tclvalue(oldright) <- tclvalue(right)
-	#        l <- as.numeric(tclvalue(left))
-	#        tclvalue(left) <- as.character(l + as.numeric(...) - ol)
-	#        tkrreplot(img)
-	#}
-
-	f4 <- function(...){
-		ol <- as.numeric(tclvalue(oldleft))
-		tclvalue(left) <- as.character(ol+10)
-		tclvalue(oldleft) <- as.character(ol+10)
-		r <- as.numeric(tclvalue(right))
-		tclvalue(right) <- as.character(r+10)
+	right_button <- function(...){
+		tclvalue(left) <- as.character(as.numeric(tclvalue(left)) + 10)
+		tclvalue(right) <- as.character(as.numeric(tclvalue(right)) + 10)
+		tkrreplot(img)
+	}
+	
+	left_button <- function(...){
+		tclvalue(left) <- as.character(as.numeric(tclvalue(left)) - 10)
+		tclvalue(right) <- as.character(as.numeric(tclvalue(right)) - 10)
 		tkrreplot(img)
 	}
 
-	s1 <- tkscale(tt, command=f2, from=1, to=length(dist$merged_prop_distances), variable=left, orient="horiz",label='left')
-	s2 <- tkscale(tt, command=f2, from=1, to=length(dist$merged_prop_distances), variable=right, orient="horiz",label='right')
-	b1 <- tkbutton(tt, text='->', command=f4)
+	s1 <- tkscale(tt, command=scroll, from=1, to=length(dist$merged_prop_distances), variable=left, orient="horiz",label='left')
+	s2 <- tkscale(tt, command=scroll, from=1, to=length(dist$merged_prop_distances), variable=right, orient="horiz",label='right')
+	b1 <- tkbutton(tt, text='->', command=right_button)
+	b2 <- tkbutton(tt, text='<-', command=left_button)
 
-	tkpack(img,s1,s2,b1)
+	tkpack(img,s1,s2,b1,b2)
 }

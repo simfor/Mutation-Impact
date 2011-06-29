@@ -1,15 +1,18 @@
 library(BioSeqClass)
 library(Biostrings)
 #library(gplots)
+library(tkrplot)
 
 Main <- function(ff1, ff2){
 	protA <- readFASTA(ff1, strip.descs=TRUE)
 	protB <- readFASTA(ff2, strip.descs=TRUE)
 	
 	#Aligns the two sequences
+	print("Aligning sequences")
 	aligned <- Align(protA[[1]]$seq, protB[[1]]$seq)
 	
 	#Retrieves the secondary structure for protA
+	print("Retrieving secondary structure")
 	protA_SecondaryStructure <- SecStructure(protA[[1]]$seq, strsplit(toString(pattern(aligned)), "")[[1]] )
 	
 	#Calculates the weight vector
@@ -112,64 +115,10 @@ Weight <- function(Structure, Confidence){
 }
 
 Align <- function(seqA, seqB){
-	aligned <- pairwiseAlignment(pattern = seqA, subject = seqB, type="local", substitutionMatrix = "BLOSUM50", gapOpening = -5, gapExtension = -1)
+	aligned <- pairwiseAlignment(pattern = seqA, subject = seqB, type="global", substitutionMatrix = "BLOSUM50", gapOpening = -5, gapExtension = -1)
 	
 #	seqA_align <- strsplit(toString(pattern(aligned)), "")
 #	seqB_align <- strsplit(toString(subject(aligned)), "")
 	
 #	list()
 }
-
-Visualize <- function(pattern, subject, dist){
-	length <- c(1:length(dist$merged_prop_distances))
-	plot_colors <- c("black","blue","red","forestgreen","yellow","green","magenta","burlywood3")
-	plot_names <- c("Sum of all properties","Transfer free energy from octanol to water", "Normalized van der Waals volume", "Isoelectric point", "Polarity", "Normalized frequency of turn", "Normalized frequency of alpha-helix", "Free energy of solution in water")
-	
-#	par(mfrow=c(2,1))
-#	layout(matrix(c(1,1,2,2), 2, 2, byrow = TRUE), heights=c(1,3) )
-	
-#	text(1,1,subject)
-
-	par(fig=c(0,1,0.1,1), cex=0.8, cex.axis=0.9)
-	plot(length, dist$merged_prop_distances, type="l", col=plot_colors[1], axes=FALSE, ann=FALSE)
-	
-	axis(1, at=1:length(dist$merged_prop_distances))
-	axis(2, at=1:max(dist$merged_prop_distances))
-	title(xlab="Position", col.lab=rgb(0,0.5,0))
-	title(ylab="Distance", col.lab=rgb(0,0.5,0))
-
-#	points(length, dist$property_distances[1,], pch=1, col="blue")
-#	points(length, dist$property_distances[2,], pch=2, col="blue")
-#	points(length, dist$property_distances[3,], pch=3, col="blue")
-#	points(length, dist$property_distances[4,], pch=4, col="blue")
-#	points(length, dist$property_distances[5,], pch=5, col="blue")
-#	points(length, dist$property_distances[6,], pch=6, col="blue")
-#	points(length, dist$property_distances[7,], pch=7, col="blue")
-
-	lines(length, dist$property_distances[1,], lty=2, col=plot_colors[2]) # pch=22, 
-	lines(length, dist$property_distances[2,], lty=2, col=plot_colors[3])
-	lines(length, dist$property_distances[3,], lty=2, col=plot_colors[4])
-	lines(length, dist$property_distances[4,], lty=2, col=plot_colors[5])
-	lines(length, dist$property_distances[5,], lty=2, col=plot_colors[6])
-	lines(length, dist$property_distances[6,], lty=2, col=plot_colors[7])
-	lines(length, dist$property_distances[7,], lty=2, col=plot_colors[8])
-	
-	x_legend2 <- length(dist$merged_prop_distances)/3
-	
-	legend(1, 20, plot_names, cex=0.8, col=plot_colors, title="Properties", lty=c(1,2,2,2,2,2,2,2), bty="n") # "topleft"
-	legend(x_legend2, 20, c(dist$merged_score, dist$property_scores), title="Total", cex=0.8, bty="n") # "topright"
-	
-	par(fig=c(0,1,0.01,0.05), cex=0.4, new=TRUE)
-#	textplot(c(pattern,subject), halign="center")
-	axis(1, at=1:length(pattern), lab=subject, lty=0)
-#	title(sub="Mutated sequence")
-	mtext("Mutated sequence", 1, cex=0.6)
-	
-	par(fig=c(0,1,0,0.1), cex=0.4, new=TRUE)
-	axis(1, at=1:length(pattern), lab=pattern, tck=-2)
-#	title(xlab="Ref. sequence")
-	mtext("Ref. sequence", 1, cex=0.6)
-}
-
-
-
