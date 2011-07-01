@@ -5,7 +5,7 @@ library(Biostrings)
 #pattern <- strsplit(toString(pattern(align_O00198_insert)), "")[[1]]
 #subject <- strsplit(toString(subject(align_O00198_insert)), "")[[1]]
 
-Visualize <- function(pattern, subject, dist){
+Visualize <- function(pattern, subject, dist, sec_structure){
 
 	tt <- tktoplevel()
 	left <- tclVar(1)
@@ -21,7 +21,7 @@ Visualize <- function(pattern, subject, dist){
 	}
 
 
-	Visualize_test <- function(){ 
+	Visualize_plot <- function(){ 
 		#The new left and right margins when scrolling
 		lleft <- as.numeric(tclvalue(left))
 	      	rright <- as.numeric(tclvalue(right))
@@ -46,7 +46,7 @@ Visualize <- function(pattern, subject, dist){
 	
 		axis(1, at=min(x):max(x))
 		axis(2, at=0:max(dist$merged_prop_distances))
-		title(xlab="Position", col.lab=rgb(0,0.5,0))
+#		title(xlab="Position", col.lab=rgb(0,0.5,0))
 		title(ylab="Distance", col.lab=rgb(0,0.5,0))
 		
 		#Adds the different distances to the plot
@@ -65,19 +65,25 @@ Visualize <- function(pattern, subject, dist){
 		legend(lleft + x_legend2, max(dist$merged_prop_distances[x]), c(dist$merged_score, dist$property_scores), title="Total", cex=0.8, bty="n") #"topright"
 
 		#The graphical parameters for the mutated sequence
-		par(fig=c(0,1,0.01,0.05), cex=0.6, new=TRUE)
+		par(fig=c(0,1,0.06,0.1), cex=0.6, new=TRUE)
 		#Adds the mutated sequence
-		axis(1, at=min(x):max(x), lab=subject[x], lty=0) #
-		mtext("Mutated sequence", 1, cex=0.6)
+		axis(1, at=min(x):max(x), lab=subject[x], lty=0)
+		mtext("Mutated sequence", 1, cex=0.6, col="green")
 
 		#The graphical parameters for the reference sequence
-		par(fig=c(0,1,0,0.1), cex=0.6, new=TRUE)
+		par(fig=c(0,1,0.05,0.15), cex=0.6, new=TRUE)
 		#Adds the reference sequence
 		axis(1, at=min(x):max(x), lab=pattern[x]) #tck=-0.1
-		mtext("Ref. sequence", 1, cex=0.6, line=2)
+		mtext("Ref. sequence", 1, cex=0.6, line=2, col="green")
+		
+		#The graphical parameters for the 2D structure
+		par(fig=c(0,1,0,0.1), cex=0.6, new=TRUE)#col.lab="blue"
+		#Adds the 2D structure
+		axis(1, at=min(x):max(x), lab=sec_structure[x], col.lab="blue", lty=0) #tck=-0.1
+		mtext("2D structure", 1, cex=0.6, line=2, col="red")
 	}
 
-	img <- tkrplot(tt, Visualize_test)
+	img <- tkrplot(tt, Visualize_plot)
 
 	scroll <- function(...){
 		tkrreplot(img)
@@ -94,11 +100,23 @@ Visualize <- function(pattern, subject, dist){
 		tclvalue(right) <- as.character(as.numeric(tclvalue(right)) - 10)
 		tkrreplot(img)
 	}
+	save_button <- function(...){
+		fileName<-tclvalue(tkgetSaveFile())
+		if (!nchar(fileName))
+		    tkmessageBox(message="No file was selected!")
+		else
+		    tkmessageBox(message=paste("Graph saved as: ",fileName))
+
+		pdf(fileName)
+		Visualize_plot()
+		dev.off()
+	}
 
 	s1 <- tkscale(tt, command=scroll, from=1, to=length(dist$merged_prop_distances), variable=left, orient="horiz",label='left')
 	s2 <- tkscale(tt, command=scroll, from=1, to=length(dist$merged_prop_distances), variable=right, orient="horiz",label='right')
 	b1 <- tkbutton(tt, text='->', command=right_button)
 	b2 <- tkbutton(tt, text='<-', command=left_button)
+	b3 <- tkbutton(tt, text='Save PDF', command=save_button)
 
-	tkpack(img,s1,s2,b1,b2)
+	tkpack(img,s1,s2,b1,b2,b3)
 }

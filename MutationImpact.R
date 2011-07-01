@@ -23,7 +23,7 @@ Main <- function(ff1, ff2){
 	dist <- Distance(toString(pattern(aligned)), toString(subject(aligned)), W)
 	
 	#Result
-	Visualize(strsplit(toString(pattern(aligned)), "")[[1]], strsplit(toString(subject(aligned)), "")[[1]], dist)
+	Visualize(strsplit(toString(pattern(aligned)), "")[[1]], strsplit(toString(subject(aligned)), "")[[1]], dist, protA_SecondaryStructure[[1]])
 	dist
 	
 	#print(aligned)
