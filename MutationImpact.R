@@ -2,6 +2,7 @@ library(BioSeqClass)
 library(Biostrings)
 #library(gplots)
 library(tkrplot)
+library(XML)
 
 Main <- function(ff1, ff2){
 	protA <- readFASTA(ff1, strip.descs=TRUE)
@@ -19,8 +20,10 @@ Main <- function(ff1, ff2){
 	W <- Weight(protA_SecondaryStructure[[1]], protA_SecondaryStructure[[2]]$PSIPRED$ConfidenceScore)
 	
 	#Calculates the distance between the two sequences
-	#dist <- Distance(protA[[1]]$seq, protB[[1]]$seq, W)
 	dist <- Distance(toString(pattern(aligned)), toString(subject(aligned)), W)
+	
+	#Looks for conserved domains in protA
+	domains <- Conserved_domains(ff1)
 	
 	#Result
 	Visualize(strsplit(toString(pattern(aligned)), "")[[1]], strsplit(toString(subject(aligned)), "")[[1]], dist, protA_SecondaryStructure[[1]])
@@ -121,4 +124,13 @@ Align <- function(seqA, seqB){
 #	seqB_align <- strsplit(toString(subject(aligned)), "")
 	
 #	list()
+}
+
+Conserved_domains <- function(ff){
+	#Performs a blast search using the program blastcl3
+	blast.xml <- paste(system(paste("blastcl3 -p blastp -d cdd -m 7 -e 1e-2 -i ", ff), intern=TRUE), collapse="")
+	#Creates an R treestructure from the XML-output given by blastcl3
+	blast.tree <- xmlInternalTreeParse(blast.xml, asText=TRUE)
+	
+	xpathSApply(blast.tree, "//Hit/Hit_def | //Hit/Hit_hsps/Hsp/Hsp_query-from | //Hit/Hit_hsps/Hsp/Hsp_query-to", xmlValue)
 }
