@@ -9,11 +9,11 @@ Main <- function(ff1, ff2){
 	protB <- readFASTA(ff2, strip.descs=TRUE)
 	
 	#Aligns the two sequences
-	print("Aligning sequences")
+	print("Aligning sequences", quote=FALSE)
 	aligned <- Align(protA[[1]]$seq, protB[[1]]$seq)
 	
 	#Retrieves the secondary structure for protA
-	print("Retrieving secondary structure")
+	print("Retrieving secondary structure", quote=FALSE)
 	protA_SecondaryStructure <- SecStructure(protA[[1]]$seq, strsplit(toString(pattern(aligned)), "")[[1]] )
 	
 	#Calculates the weight vector
@@ -23,7 +23,8 @@ Main <- function(ff1, ff2){
 	dist <- Distance(toString(pattern(aligned)), toString(subject(aligned)), W)
 	
 	#Looks for conserved domains in protA
-	domains <- Conserved_domains(ff1)
+	print("Looking for conserved domains", quote=FALSE)
+	domains <- Conserved_domains(ff1, strsplit(toString(pattern(aligned)), "")[[1]])
 	
 	#Result
 	Visualize(strsplit(toString(pattern(aligned)), "")[[1]], strsplit(toString(subject(aligned)), "")[[1]], dist, protA_SecondaryStructure[[1]])
@@ -35,7 +36,7 @@ Main <- function(ff1, ff2){
 
 Distance <- function(seqA, seqB, W){
 	#Collects physicochemical descriptors for protA from aaIndex database
-	seqA_RADA880102 <- featureAAindex(seqA, aaindex.name="RADA880102") 
+	seqA_RADA880102 <- featureAAindex(seqA, aaindex.name="RADA880102")
 	seqA_FAUJ880103 <- featureAAindex(seqA, aaindex.name="FAUJ880103")
 	seqA_ZIMJ680104 <- featureAAindex(seqA, aaindex.name="ZIMJ680104")
 	seqA_GRAR740102 <- featureAAindex(seqA, aaindex.name="GRAR740102")
@@ -126,11 +127,36 @@ Align <- function(seqA, seqB){
 #	list()
 }
 
-Conserved_domains <- function(ff){
+Conserved_domains <- function(ff, seq_align){
 	#Performs a blast search using the program blastcl3
 	blast.xml <- paste(system(paste("blastcl3 -p blastp -d cdd -m 7 -e 1e-2 -i ", ff), intern=TRUE), collapse="")
 	#Creates an R treestructure from the XML-output given by blastcl3
 	blast.tree <- xmlInternalTreeParse(blast.xml, asText=TRUE)
+	#Collects the information of interest from the tree
+	domain_IDs <- xpathSApply(blast.tree, "//Hit/Hit_id", xmlValue)
+	domain_from <- as.numeric(xpathSApply(blast.tree, "//Hit/Hit_hsps/Hsp/Hsp_query-from", xmlValue))
+	domain_to <- as.numeric(xpathSApply(blast.tree, "//Hit/Hit_hsps/Hsp/Hsp_query-to", xmlValue))
 	
-	xpathSApply(blast.tree, "//Hit/Hit_def | //Hit/Hit_hsps/Hsp/Hsp_query-from | //Hit/Hit_hsps/Hsp/Hsp_query-to", xmlValue)
+	#Modifies the domain boundaries in accordance with seq_align
+	position_nr <- 1
+	for(position in seq_align){
+		if(position == '-'){
+			it_number <- 1
+			for(from in domain_from){
+				if(from > position_nr){
+					domain_from[it_number] <- domain_from[it_number] + 1
+				}
+				it_number <- it_number +1
+			}
+			it_number <- 1
+			for(to in domain_to){
+				if(to > position_nr){
+					domain_to[it_number] <- domain_to[it_number] + 1
+				}
+				it_number <- it_number +1
+			}
+		}
+		position_nr <- position_nr + 1
+	}
+	list(domain_IDs, domain_from, domain_to)
 }

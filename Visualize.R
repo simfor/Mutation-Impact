@@ -116,7 +116,7 @@ Visualize <- function(pattern, subject, dist, sec_structure){
 	s2 <- tkscale(tt, command=scroll, from=1, to=length(dist$merged_prop_distances), variable=right, orient="horiz",label='right')
 	b1 <- tkbutton(tt, text='->', command=right_button)
 	b2 <- tkbutton(tt, text='<-', command=left_button)
-	b3 <- tkbutton(tt, text='Save PDF', command=save_button)
+	b3 <- tkbutton(tt, text='Save as PDF', command=save_button)
 
 	tkpack(img,s1,s2,b1,b2,b3)
 }
