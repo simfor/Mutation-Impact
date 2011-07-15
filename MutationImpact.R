@@ -27,7 +27,7 @@ Main <- function(ff1, ff2){
 	domains <- Conserved_domains(ff1, strsplit(toString(pattern(aligned)), "")[[1]])
 	
 	#Result
-	Visualize(strsplit(toString(pattern(aligned)), "")[[1]], strsplit(toString(subject(aligned)), "")[[1]], dist, protA_SecondaryStructure[[1]])
+	Visualize(strsplit(toString(pattern(aligned)), "")[[1]], strsplit(toString(subject(aligned)), "")[[1]], dist, protA_SecondaryStructure[[1]], domains)
 	dist
 	
 	#print(aligned)
@@ -136,8 +136,9 @@ Conserved_domains <- function(ff, seq_align){
 	domain_IDs <- xpathSApply(blast.tree, "//Hit/Hit_id", xmlValue)
 	domain_from <- as.numeric(xpathSApply(blast.tree, "//Hit/Hit_hsps/Hsp/Hsp_query-from", xmlValue))
 	domain_to <- as.numeric(xpathSApply(blast.tree, "//Hit/Hit_hsps/Hsp/Hsp_query-to", xmlValue))
+	e_value <- as.numeric(xpathSApply(blast.tree, "//Hit/Hit_hsps/Hsp/Hsp_evalue", xmlValue))
 	
-	#Modifies the domain boundaries in accordance with seq_align
+	#Modifies the domain boundaries in accordance with the gaps in seq_align
 	position_nr <- 1
 	for(position in seq_align){
 		if(position == '-'){
@@ -146,17 +147,42 @@ Conserved_domains <- function(ff, seq_align){
 				if(from > position_nr){
 					domain_from[it_number] <- domain_from[it_number] + 1
 				}
-				it_number <- it_number +1
+				it_number <- it_number + 1
 			}
 			it_number <- 1
 			for(to in domain_to){
 				if(to > position_nr){
 					domain_to[it_number] <- domain_to[it_number] + 1
 				}
-				it_number <- it_number +1
+				it_number <- it_number + 1
 			}
 		}
 		position_nr <- position_nr + 1
 	}
-	list(domain_IDs, domain_from, domain_to)
+	
+	#Creates a vector indicating where the domains are located along the sequence. This vector is used by Visualize() to visualize the domains
+	domains <- rep(0, length(seq_align))
+	it_number <- 1
+	for(from in domain_from){
+		#Looks for overlaping domains. An overlap can occur in 4 different ways
+		case1 <- domain_from[it_number]<=domain_from & (domain_to[it_number]>domain_from & domain_to[it_number]<domain_to)
+		case2 <- (domain_from[it_number]>domain_from & domain_from[it_number]<domain_to) & domain_to[it_number]>=domain_to
+		case3 <- (domain_from[it_number]>domain_from & domain_from[it_number]<domain_to) & (domain_to[it_number]>domain_from & domain_to[it_number]<domain_to)
+		case4 <- domain_from[it_number]<=domain_from & domain_to[it_number]>=domain_to
+		overlap <- case1 | case2 | case3 | case4
+		print(overlap)
+		
+		#If overlap occurs, the domain with the lowest e-value is choosen for visualization
+		if(length(which(overlap))>1){
+			if(e_value[it_number] <= min(e_value[which(overlap)])){
+				domains[c(domain_from[it_number]:domain_to[it_number])] <- it_number
+			}
+		}
+		else{
+			domains[c(domain_from[it_number]:domain_to[it_number])] <- it_number
+		}
+		it_number <- it_number + 1
+	}
+	
+	list(domain_IDs, domains, domain_from, domain_to, e_value)
 }

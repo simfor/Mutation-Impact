@@ -5,7 +5,7 @@ library(Biostrings)
 #pattern <- strsplit(toString(pattern(align_O00198_insert)), "")[[1]]
 #subject <- strsplit(toString(subject(align_O00198_insert)), "")[[1]]
 
-Visualize <- function(pattern, subject, dist, sec_structure){
+Visualize <- function(pattern, subject, dist, sec_structure, domains){
 
 	tt <- tktoplevel()
 	left <- tclVar(1)
@@ -26,7 +26,8 @@ Visualize <- function(pattern, subject, dist, sec_structure){
 		lleft <- as.numeric(tclvalue(left))
 	      	rright <- as.numeric(tclvalue(right))
 		
-		x <- seq(lleft,rright,by=1)
+#		x <- seq(lleft,rright,by=1)
+		x <- c(lleft:rright)
 		plot_colors <- c("black","blue","red","forestgreen","yellow","green","magenta","burlywood3")
 		plot_names <- c("Sum of all properties","Transfer free energy from octanol to water", "Normalized van der Waals volume", "Isoelectric point", "Polarity", "Normalized frequency of turn", "Normalized frequency of alpha-helix", "Free energy of solution in water")
 	
