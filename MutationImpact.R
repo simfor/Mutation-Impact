@@ -98,7 +98,7 @@ SecStructure <- function(seq, seq_align){
 Weight <- function(Structure, Confidence){
 	#The function takes a a string vector for the protein secondary structure and a vector with confidence scores as arguments. 
 	#It returns a vector with weights for each position in the AA-sequence
-	weight <- (1:length(Structure))
+	weight <- rep(1,length(Structure))
 	position_nr <- 1
 	gap <- 0
 
@@ -110,9 +110,9 @@ Weight <- function(Structure, Confidence){
 			weight[position_nr] <- 1.3
 			gap <- gap + 1
 		}
-		else{
-			weight[position_nr] <- 1
-		}
+#		else{
+#			weight[position_nr] <- 1
+#		}
 		position_nr <- position_nr + 1
 	}
 	weight
@@ -170,16 +170,19 @@ Conserved_domains <- function(ff, seq_align){
 		case3 <- (domain_from[it_number]>domain_from & domain_from[it_number]<domain_to) & (domain_to[it_number]>domain_from & domain_to[it_number]<domain_to)
 		case4 <- domain_from[it_number]<=domain_from & domain_to[it_number]>=domain_to
 		overlap <- case1 | case2 | case3 | case4
-		print(overlap)
 		
 		#If overlap occurs, the domain with the lowest e-value is choosen for visualization
-		if(length(which(overlap))>1){
-			if(e_value[it_number] <= min(e_value[which(overlap)])){
+#		if(length(which(overlap))>1){
+#			if(e_value[it_number] <= min(e_value[which(overlap)])){
+#				domains[c(domain_from[it_number]:domain_to[it_number])] <- it_number
+#			}
+#		}
+#		else{
+#			domains[c(domain_from[it_number]:domain_to[it_number])] <- it_number
+#		}
+		
+		if(e_value[it_number] <= min(e_value[which(overlap)])){
 				domains[c(domain_from[it_number]:domain_to[it_number])] <- it_number
-			}
-		}
-		else{
-			domains[c(domain_from[it_number]:domain_to[it_number])] <- it_number
 		}
 		it_number <- it_number + 1
 	}
