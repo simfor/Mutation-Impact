@@ -9,9 +9,9 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 
 	tt <- tktoplevel()
 	left <- tclVar(1)
-	oldleft <- tclVar(1)
 	right <- tclVar(100)
-	oldright <- tclVar(100)
+	up <- tclVar(max(dist$merged_prop_distances))
+	down <- tclVar(0)
 
 	#dev.new(width=12, height=9)
 
@@ -25,6 +25,8 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		#The new left and right margins when scrolling
 		lleft <- as.numeric(tclvalue(left))
 	      	rright <- as.numeric(tclvalue(right))
+	      	uup <- as.numeric(tclvalue(up))
+	      	ddown <- as.numeric(tclvalue(down))
 		
 		x <- c(lleft:rright)
 		plot_colors <- c("black","blue","red","forestgreen","yellow","green","magenta","burlywood3")
@@ -42,7 +44,7 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		#The graphical parameters for the distance plot
 		par(fig=c(0,1,0.13,1), cex=0.7, cex.axis=0.9 )#mar=c(3.0, 3.0, 1.5, 1.5)
 		#Plots the sum of distances
-		plot(x, dist$merged_prop_distances[x], type="l", col=plot_colors[1], axes=FALSE, ann=FALSE, xlim=range(x), ylim=c(0,max(dist$merged_prop_distances)))
+		plot(x, dist$merged_prop_distances[x], type="l", col=plot_colors[1], axes=FALSE, ann=FALSE, xlim=range(x), ylim=c(ddown, uup)) #0, max(dist$merged_prop_distances)
 	
 		axis(1, at=min(x):max(x))
 		axis(2, at=0:max(dist$merged_prop_distances))
@@ -92,11 +94,17 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 				text(x[median(which(domains_in_view==curr_domain))], min(dist$merged_prop_distances[which(dist$merged_prop_distances!=0)])/2, labels=domains[[1]][curr_domain])
 			}
 		}
+		
+		text(50, -3, labels="bajsmacka")
 	}
 
-	img <- tkrplot(tt, Visualize_plot)
-
-	scroll <- function(...){
+	scroll_x <- function(...){
+		tkrreplot(img)
+	}
+	
+	scroll_y <- function(...){
+		tclvalue(up) <- as.character(as.numeric(tclvalue(up)) - 1)
+		tclvalue(down) <- as.character(as.numeric(tclvalue(down)) + 1)
 		tkrreplot(img)
 	}
 
@@ -123,13 +131,28 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		dev.off()
 	}
 
-	s1 <- tkscale(tt, command=scroll, from=1, to=length(dist$merged_prop_distances), variable=left, orient="horiz",label='left')
-	s2 <- tkscale(tt, command=scroll, from=1, to=length(dist$merged_prop_distances), variable=right, orient="horiz",label='right')
+	img <- tkrplot(tt, Visualize_plot, vscale=1.05, hscale=2.5) #, yscrollcommand=function(...)tkset(scr,...)
+	s1 <- tkscale(tt, command=scroll_x, from=1, to=length(dist$merged_prop_distances), variable=left, orient="horiz",label='left')
+	s2 <- tkscale(tt, command=scroll_x, from=1, to=length(dist$merged_prop_distances), variable=right, orient="horiz",label='right')
+	#scr_y <- tkscrollbar(tt, command=function(...)tkyview(img, ...) ) #, from=1, to=max(dist$merged_prop_distances)
+	scr_y <- tkscale(tt, command=scroll_y)
 	b1 <- tkbutton(tt, text='->', command=right_button)
 	b2 <- tkbutton(tt, text='<-', command=left_button)
 	b3 <- tkbutton(tt, text='Save as PDF', command=save_button)
 
-	tkpack(img,s1,s2,b1,b2,b3)
+#	tkpack(img,s1,s2,b1,b2,b3,scr_y, sticky="fill")
 #	tkpack(b1, side="right", fill="both", expand=TRUE)
 #	tkpack(b2, side="left")
+
+	tkgrid(img, scr_y)
+	tkgrid(s1)
+	tkgrid(s2)
+	tkgrid(b1)
+	tkgrid(b2)
+	tkgrid(b3)
+	#tkgrid.configure(img, columnspan=3, rowspan=2)
+	tkgrid.configure(s1, sticky="ew") #, column=0, row=1
+	tkgrid.configure(s2, sticky="ew")
+	tkgrid.configure(scr_y, sticky="ns")
+	tkfocus(img)
 }
