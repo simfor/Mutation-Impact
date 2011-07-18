@@ -26,7 +26,6 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		lleft <- as.numeric(tclvalue(left))
 	      	rright <- as.numeric(tclvalue(right))
 		
-#		x <- seq(lleft,rright,by=1)
 		x <- c(lleft:rright)
 		plot_colors <- c("black","blue","red","forestgreen","yellow","green","magenta","burlywood3")
 		plot_names <- c("Sum of all properties","Transfer free energy from octanol to water", "Normalized van der Waals volume", "Isoelectric point", "Polarity", "Normalized frequency of turn", "Normalized frequency of alpha-helix", "Free energy of solution in water")
@@ -43,7 +42,7 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		#The graphical parameters for the distance plot
 		par(fig=c(0,1,0.13,1), cex=0.7, cex.axis=0.9 )#mar=c(3.0, 3.0, 1.5, 1.5)
 		#Plots the sum of distances
-		plot(x, dist$merged_prop_distances[x], type="l", col=plot_colors[1], axes=FALSE, ann=FALSE, xlim=range(x))
+		plot(x, dist$merged_prop_distances[x], type="l", col=plot_colors[1], axes=FALSE, ann=FALSE, xlim=range(x), ylim=c(0,max(dist$merged_prop_distances)))
 	
 		axis(1, at=min(x):max(x))
 		axis(2, at=0:max(dist$merged_prop_distances))
@@ -62,8 +61,8 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		#The distance between the two legends
 		x_legend2 <- length(x)/1.5
 		
-		legend(lleft, max(dist$merged_prop_distances[x]), plot_names, cex=0.8, col=plot_colors, title="Properties", lty=c(1,2,2,2,2,2,2,2), bty="n") #"topleft"
-		legend(lleft + x_legend2, max(dist$merged_prop_distances[x]), c(dist$merged_score, dist$property_scores), title="Total", cex=0.8, bty="n") #"topright"
+		legend(lleft, max(dist$merged_prop_distances), plot_names, cex=0.8, col=plot_colors, title="Properties", lty=c(1,2,2,2,2,2,2,2), bty="n") #"topleft"
+		legend(lleft + x_legend2, max(dist$merged_prop_distances), c(dist$merged_score, dist$property_scores), title="Total", cex=0.8, bty="n") #"topright"
 
 		#The graphical parameters for the mutated sequence
 		par(fig=c(0,1,0.06,0.1), cex=0.6, new=TRUE)
@@ -89,7 +88,8 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		domains_in_view <- domains[[2]][x]
 		for(curr_domain in unique(domains_in_view)){
 			if(curr_domain != 0){
-				rect(x[min(which(domains_in_view==curr_domain))], 0,x[max(which(domains_in_view==curr_domain))], 10)
+				rect(x[min(which(domains_in_view==curr_domain))], 0,x[max(which(domains_in_view==curr_domain))], min(dist$merged_prop_distances[which(dist$merged_prop_distances!=0)]))
+				text(x[median(which(domains_in_view==curr_domain))], min(dist$merged_prop_distances[which(dist$merged_prop_distances!=0)])/2, labels=domains[[1]][curr_domain])
 			}
 		}
 	}
@@ -130,4 +130,6 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 	b3 <- tkbutton(tt, text='Save as PDF', command=save_button)
 
 	tkpack(img,s1,s2,b1,b2,b3)
+#	tkpack(b1, side="right", fill="both", expand=TRUE)
+#	tkpack(b2, side="left")
 }
