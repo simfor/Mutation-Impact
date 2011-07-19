@@ -87,15 +87,18 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		#The graphical parameters for the conserved domains
 		par(fig=c(0,1,0,0.1), new=TRUE)
 		#Adds the conserved domains
-		domains_in_view <- domains[[2]][x]
+		domains_in_view <- domains$domain_pos[x]
 		for(curr_domain in unique(domains_in_view)){
 			if(curr_domain != 0){
-				rect(x[min(which(domains_in_view==curr_domain))], 0,x[max(which(domains_in_view==curr_domain))], min(dist$merged_prop_distances[which(dist$merged_prop_distances!=0)]))
-				text(x[median(which(domains_in_view==curr_domain))], min(dist$merged_prop_distances[which(dist$merged_prop_distances!=0)])/2, labels=domains[[1]][curr_domain])
+				if(domains$conflict[curr_domain] == 0){
+					rect(x[min(which(domains_in_view==curr_domain))], 0,x[max(which(domains_in_view==curr_domain))], min(dist$merged_prop_distances[which(dist$merged_prop_distances!=0)]), col="green")
+				}
+				else{
+					rect(x[min(which(domains_in_view==curr_domain))], 0,x[max(which(domains_in_view==curr_domain))], min(dist$merged_prop_distances[which(dist$merged_prop_distances!=0)]), col="red")
+				}
+				text(x[median(which(domains_in_view==curr_domain))], min(dist$merged_prop_distances[which(dist$merged_prop_distances!=0)])/2, labels=domains$domain_IDs[curr_domain])
 			}
 		}
-		
-		text(50, -3, labels="bajsmacka")
 	}
 
 	scroll_x <- function(...){
@@ -144,7 +147,7 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 #	tkpack(b1, side="right", fill="both", expand=TRUE)
 #	tkpack(b2, side="left")
 
-	tkgrid(img, scr_y)
+	tkgrid(img)
 	tkgrid(s1)
 	tkgrid(s2)
 	tkgrid(b1)
@@ -153,6 +156,6 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 	#tkgrid.configure(img, columnspan=3, rowspan=2)
 	tkgrid.configure(s1, sticky="ew") #, column=0, row=1
 	tkgrid.configure(s2, sticky="ew")
-	tkgrid.configure(scr_y, sticky="ns")
+	#tkgrid.configure(scr_y, sticky="ns")
 	tkfocus(img)
 }

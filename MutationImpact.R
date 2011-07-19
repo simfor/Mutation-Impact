@@ -161,7 +161,8 @@ Conserved_domains <- function(ff, seq_align){
 	}
 	
 	#Creates a vector indicating where the domains are located along the sequence. This vector is used by Visualize() to visualize the domains
-	domains <- rep(0, length(seq_align))
+	domain_pos <- rep(0, length(seq_align))
+	conflict <- rep(0, length(domain_from))
 	it_number <- 1
 	for(from in domain_from){
 		#Looks for overlaping domains. An overlap can occur in 4 different ways
@@ -172,20 +173,21 @@ Conserved_domains <- function(ff, seq_align){
 		overlap <- case1 | case2 | case3 | case4
 		
 		#If overlap occurs, the domain with the lowest e-value is choosen for visualization
-#		if(length(which(overlap))>1){
-#			if(e_value[it_number] <= min(e_value[which(overlap)])){
-#				domains[c(domain_from[it_number]:domain_to[it_number])] <- it_number
-#			}
-#		}
-#		else{
-#			domains[c(domain_from[it_number]:domain_to[it_number])] <- it_number
-#		}
-		
-		if(e_value[it_number] <= min(e_value[which(overlap)])){
-				domains[c(domain_from[it_number]:domain_to[it_number])] <- it_number
+		if(length(which(overlap))>1){
+			conflict[it_number] <- 1 #Indicates that there are conflicting domain predictions
+			if(e_value[it_number] <= min(e_value[which(overlap)])){
+				domain_pos[c(domain_from[it_number]:domain_to[it_number])] <- it_number
+			}
 		}
+		else{
+			domain_pos[c(domain_from[it_number]:domain_to[it_number])] <- it_number
+		}
+		
+#		if(e_value[it_number] <= min(e_value[which(overlap)])){
+#				domains[c(domain_from[it_number]:domain_to[it_number])] <- it_number
+#		}
 		it_number <- it_number + 1
 	}
 	
-	list(domain_IDs, domains, domain_from, domain_to, e_value)
+	list(domain_IDs=domain_IDs, domain_pos=domain_pos, domain_from=domain_from, domain_to=domain_to, e_value=e_value, conflict=conflict)
 }
