@@ -35,12 +35,13 @@ domain_visualization <- function(pattern, subject, dist, domains){
 		
 		#domains_in_view <- domains$domain_pos[x]
 		plot(rep(10,length(x)), axes=FALSE, ann=FALSE, col="white", xlim=range(x))
-		space <- 0.1
+		i <- 1
 		for(domain in domains$all_domain_pos){
-			#par(fig=c(0,1,0.7-space,0.8-space), new=TRUE)
-			rect(x[min(which(domain[x]==1))], 0,x[max(which(domain[x]==1))], min(dist$merged_prop_distances[which(dist$merged_prop_distances!=0)]), col="green")
-			#text(x[median(which(domains_in_view==curr_domain))], min(dist$merged_prop_distances[which(dist$merged_prop_distances!=0)])/2, labels=domains$domain_IDs[curr_domain])
-			space <- space + 0.1
+			if(length(which(domain[x]==1)) > 0){
+				rect(x[min(which(domain[x]==1))], 15-i,x[max(which(domain[x]==1))], 16-i, col="green", xpd=NA)
+				text(x[median(which(domain[x]==1))], 15.5-i, labels=paste("Domain ID:", domains$domain_IDs[i], "e-value:", domains$e_value[i], sep=" "), cex=0.8, xpd=NA)
+			}
+			i <- i + 1
 		}
 	}
 	

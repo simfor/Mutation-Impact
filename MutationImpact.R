@@ -13,8 +13,8 @@ Main <- function(ff1, ff2){
 	aligned <- Align(protA[[1]]$seq, protB[[1]]$seq)
 	
 	#Retrieves the secondary structure for protA
-	print("Retrieving secondary structure", quote=FALSE)
-	protA_SecondaryStructure <- SecStructure(protA[[1]]$seq, strsplit(toString(pattern(aligned)), "")[[1]] )
+#	print("Retrieving secondary structure", quote=FALSE)
+#	protA_SecondaryStructure <- SecStructure(protA[[1]]$seq, strsplit(toString(pattern(aligned)), "")[[1]] )
 	
 	#Calculates the weight vector
 	W <- Weight(protA_SecondaryStructure[[1]], protA_SecondaryStructure[[2]]$PSIPRED$ConfidenceScore)
@@ -160,9 +160,10 @@ Conserved_domains <- function(ff, seq_align){
 		position_nr <- position_nr + 1
 	}
 	
-	#Creates a vector indicating where the domains are located along the sequence. This vector is used by Visualize() to visualize the domains
+	#Creates vectors indicating where the domains are located along the sequence and the domain predictions that overlap. These vectors are used by Visualize() to visualize the domains
 	domain_pos <- rep(0, length(seq_align))
 	conflict <- rep(0, length(domain_from))
+	all_domain_pos <- list()
 	it_number <- 1
 	for(from in domain_from){
 		#Looks for overlaping domains. An overlap can occur in 4 different ways
@@ -186,8 +187,14 @@ Conserved_domains <- function(ff, seq_align){
 #		if(e_value[it_number] <= min(e_value[which(overlap)])){
 #				domains[c(domain_from[it_number]:domain_to[it_number])] <- it_number
 #		}
+
+		#Creates a list containing one vector for each domain. This is used in the domain visualization to show the domains that are discarded in the the primary visualization because they overlap with a domain that has a lower e-value
+		all_domain_pos[[it_number]] <- rep(0, length(seq_align))
+		all_domain_pos[[it_number]][c(domain_from[it_number]:domain_to[it_number])] <- 1
+#		all_domain_pos[[it_number]][length(seq_align) + 1] <- e_value[it_number] #The last element contains the e-value
+
 		it_number <- it_number + 1
 	}
 	
-	list(domain_IDs=domain_IDs, domain_pos=domain_pos, domain_from=domain_from, domain_to=domain_to, e_value=e_value, conflict=conflict)
+	list(domain_IDs=domain_IDs, domain_pos=domain_pos, domain_from=domain_from, domain_to=domain_to, e_value=e_value, conflict=conflict, all_domain_pos=all_domain_pos)
 }

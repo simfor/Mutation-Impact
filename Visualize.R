@@ -13,14 +13,6 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 	up <- tclVar(max(dist$merged_prop_distances))
 	down <- tclVar(0)
 
-	#dev.new(width=12, height=9)
-
-	resize.win <- function(Width=6, Height=6){
-	    dev.off(); # dev.new(width=6, height=6)
-	    x11(record=TRUE, width=Width, height=Height)
-	}
-
-
 	Visualize_plot <- function(){ 
 		#The new left and right margins when scrolling
 		lleft <- as.numeric(tclvalue(left))
@@ -31,20 +23,11 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		x <- c(lleft:rright)
 		plot_colors <- c("black","blue","red","forestgreen","yellow","green","magenta","burlywood3")
 		plot_names <- c("Sum of all properties","Transfer free energy from octanol to water", "Normalized van der Waals volume", "Isoelectric point", "Polarity", "Normalized frequency of turn", "Normalized frequency of alpha-helix", "Free energy of solution in water")
-	
-	#	par(mfrow=c(2,1))
-	#	layout(matrix(c(1,1,2,2), 2, 2, byrow = TRUE), heights=c(1,3) )
-	
-	#	text(1,1,subject)
-	#	dev.new(width=12, height=9)
-	#	dev.off()
-	#	x11(width=12, height=9)
-	#	resize.win(12,9)
 		
 		#The graphical parameters for the distance plot
 		par(fig=c(0,1,0.13,1), cex=0.7, cex.axis=0.9 )#mar=c(3.0, 3.0, 1.5, 1.5)
 		#Plots the sum of distances
-		plot(x, dist$merged_prop_distances[x], type="l", col=plot_colors[1], axes=FALSE, ann=FALSE, xlim=range(x), ylim=c(ddown, uup)) #0, max(dist$merged_prop_distances)
+		plot(x, dist$merged_prop_distances[x], type="l", col=plot_colors[1], axes=FALSE, ann=FALSE, xlim=range(x), ylim=c(0, max(dist$merged_prop_distances))) #uup, ddown
 	
 		axis(1, at=min(x):max(x))
 		axis(2, at=0:max(dist$merged_prop_distances))
@@ -61,7 +44,7 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		lines(x, dist$property_distances[7,][x], lty=2, col=plot_colors[8])
 
 		#The distance between the two legends
-		x_legend2 <- length(x)/1.5
+		x_legend2 <- length(x)/3
 		
 		legend(lleft, max(dist$merged_prop_distances), plot_names, cex=0.8, col=plot_colors, title="Properties", lty=c(1,2,2,2,2,2,2,2), bty="n") #"topleft"
 		legend(lleft + x_legend2, max(dist$merged_prop_distances), c(dist$merged_score, dist$property_scores), title="Total", cex=0.8, bty="n") #"topright"
@@ -96,7 +79,7 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 				else{
 					rect(x[min(which(domains_in_view==curr_domain))], 0,x[max(which(domains_in_view==curr_domain))], min(dist$merged_prop_distances[which(dist$merged_prop_distances!=0)]), col="red")
 				}
-				text(x[median(which(domains_in_view==curr_domain))], min(dist$merged_prop_distances[which(dist$merged_prop_distances!=0)])/2, labels=domains$domain_IDs[curr_domain])
+				text(x[median(which(domains_in_view==curr_domain))], min(dist$merged_prop_distances[which(dist$merged_prop_distances!=0)])/2, labels=paste("Domain ID:", domains$domain_IDs[curr_domain], "e-value:", domains$e_value[curr_domain], sep=" "))
 			}
 		}
 	}
@@ -134,6 +117,7 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		dev.off()
 	}
 
+	#Creates the widgets
 	img <- tkrplot(tt, Visualize_plot, vscale=1.05, hscale=2.5) #, yscrollcommand=function(...)tkset(scr,...)
 	s1 <- tkscale(tt, command=scroll_x, from=1, to=length(dist$merged_prop_distances), variable=left, orient="horiz",label='left')
 	s2 <- tkscale(tt, command=scroll_x, from=1, to=length(dist$merged_prop_distances), variable=right, orient="horiz",label='right')
@@ -147,13 +131,13 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 #	tkpack(b1, side="right", fill="both", expand=TRUE)
 #	tkpack(b2, side="left")
 
+	#Puts all the widgets in a grid
 	tkgrid(img)
 	tkgrid(s1)
 	tkgrid(s2)
 	tkgrid(b1)
 	tkgrid(b2)
 	tkgrid(b3)
-	#tkgrid.configure(img, columnspan=3, rowspan=2)
 	tkgrid.configure(s1, sticky="ew") #, column=0, row=1
 	tkgrid.configure(s2, sticky="ew")
 	#tkgrid.configure(scr_y, sticky="ns")
