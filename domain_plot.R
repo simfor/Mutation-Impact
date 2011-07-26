@@ -19,8 +19,7 @@ domain_visualization <- function(pattern, subject, dist, domains){
 		#Plots the sum of distances
 		plot(x, dist$merged_prop_distances[x], type="l", axes=FALSE, ann=FALSE, xlim=range(x), ylim=c(0, max(dist$merged_prop_distances)), cex=0.7)
 		axis(1, at=min(x):max(x), , cex.axis=0.6)
-		#axis(2, at=0:max(dist$merged_prop_distances))
-
+		
 		#The graphical parameters for the mutated sequence
 		#par(fig=c(0,1,0.71,0.75), cex=0.6, new=TRUE)
 		#Adds the mutated sequence
@@ -67,7 +66,7 @@ domain_visualization <- function(pattern, subject, dist, domains){
 		    tkmessageBox(message=paste("Graph saved as: ",fileName))
 
 		pdf(fileName)
-		Visualize_plot()
+		domain_plot()
 		dev.off()
 	}
 	
