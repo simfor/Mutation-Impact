@@ -1,0 +1,5 @@
+This is the development version of an R-package for finding functionally relevant mutations in protein sequences. The tool takes two protein sequences as
+input and calculates the distance between them with respect to 7 different physicochemical properties. It also takes into account 2D-structure and 
+conserved domains. 
+
+Author: Simon Forsberg
