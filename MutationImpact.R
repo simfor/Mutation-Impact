@@ -134,6 +134,7 @@ Conserved_domains <- function(ff, seq_align){
 	blast.tree <- xmlInternalTreeParse(blast.xml, asText=TRUE)
 	#Collects the information of interest from the tree
 	domain_IDs <- xpathSApply(blast.tree, "//Hit/Hit_id", xmlValue)
+	domain_description <- xpathSApply(blast.tree, "//Hit/Hit_def", xmlValue)
 	domain_from <- as.numeric(xpathSApply(blast.tree, "//Hit/Hit_hsps/Hsp/Hsp_query-from", xmlValue))
 	domain_to <- as.numeric(xpathSApply(blast.tree, "//Hit/Hit_hsps/Hsp/Hsp_query-to", xmlValue))
 	e_value <- as.numeric(xpathSApply(blast.tree, "//Hit/Hit_hsps/Hsp/Hsp_evalue", xmlValue))
@@ -196,5 +197,6 @@ Conserved_domains <- function(ff, seq_align){
 		it_number <- it_number + 1
 	}
 	
-	list(domain_IDs=domain_IDs, domain_pos=domain_pos, domain_from=domain_from, domain_to=domain_to, e_value=e_value, conflict=conflict, all_domain_pos=all_domain_pos)
+	#Returns a list with the information of interest
+	list(domain_IDs=domain_IDs, domain_description=domain_description, domain_pos=domain_pos, domain_from=domain_from, domain_to=domain_to, e_value=e_value, conflict=conflict, all_domain_pos=all_domain_pos)
 }

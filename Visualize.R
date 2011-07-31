@@ -8,6 +8,7 @@ library(Biostrings)
 Visualize <- function(pattern, subject, dist, sec_structure, domains){
 
 	tt <- tktoplevel()
+	tkwm.title(tt,"Mutation impact")
 	left <- tclVar(1)
 	right <- tclVar(100)
 
@@ -21,9 +22,9 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		plot_names <- c("Sum of all properties","Transfer free energy from octanol to water", "Normalized van der Waals volume", "Isoelectric point", "Polarity", "Normalized frequency of turn", "Normalized frequency of alpha-helix", "Free energy of solution in water")
 		
 		#The graphical parameters for the distance plot
-		par(cex=0.7, cex.axis=0.9, mar=c(12, 4.1, 4.1, 2.1))#
+		par(cex=0.7, cex.axis=0.9, mar=c(12, 4.1, 4.1, 2.1))
 		#Plots the sum of distances
-		plot(x, dist$merged_prop_distances[x], type="l", col=plot_colors[1], axes=FALSE, ann=FALSE, xlim=range(x), ylim=c(0, max(dist$merged_prop_distances))) #uup, ddown
+		plot(x, dist$merged_prop_distances[x], type="l", col=plot_colors[1], axes=FALSE, ann=FALSE, xlim=range(x), ylim=c(0, max(dist$merged_prop_distances))) 
 	
 		axis(1, at=min(x):max(x))
 		axis(2, at=0:max(dist$merged_prop_distances))
