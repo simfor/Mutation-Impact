@@ -24,10 +24,10 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		#The graphical parameters for the distance plot
 		par(cex=0.7, cex.axis=0.9, mar=c(12, 4.1, 4.1, 2.1))
 		#Plots the sum of distances
-		plot(x, dist$merged_prop_distances[x], type="l", col=plot_colors[1], axes=FALSE, ann=FALSE, xlim=range(x), ylim=c(0, max(dist$merged_prop_distances))) 
+		plot(x, dist$merged_prop_distances[x], type="l", col=plot_colors[1], axes=FALSE, ann=FALSE, xlim=range(x), ylim=c(min(dist$property_distances), max(dist$merged_prop_distances))) 
 	
 		axis(1, at=min(x):max(x))
-		axis(2, at=0:max(dist$merged_prop_distances))
+		axis(2, at=round(min(dist$property_distances),digits=2):round(max(dist$merged_prop_distances), digits=2))
 #		title(xlab="Position", col.lab=rgb(0,0.5,0))
 		title(ylab="Distance", col.lab=rgb(0,0.5,0))
 		
