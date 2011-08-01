@@ -61,11 +61,11 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		#The graphical parameters for the 2D structure
 #		par(fig=c(0,1,0,0.1), cex=0.6, new=TRUE)#col.lab="blue"
 		#Adds the 2D structure
-		axis(1, at=min(x):max(x), lab=sec_structure[x], line=6, col.lab="blue", lty=0) #tck=-0.1
-		mtext("2D structure", 1, cex=0.6, line=8, col="red")
+		axis(1, at=min(x):max(x), lab=sec_structure[x], line=5, col.lab="blue", lty=0) #tck=-0.1
+		mtext("2D structure", 1, cex=0.6, line=7, col="red")
 		
 		#The graphical parameters for the conserved domains
-		par(fig=c(0,1,0,0.1), new=TRUE)
+		par(fig=c(0,1,0,0.09), new=TRUE)
 		#Adds the conserved domains
 		domains_in_view <- domains$domain_pos[x]
 		for(curr_domain in unique(domains_in_view)){
