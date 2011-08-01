@@ -146,7 +146,7 @@ Align <- function(seqA, seqB){
 
 Conserved_domains <- function(ff, seq_align){
 	#Performs a blast search using the program blastcl3
-	blast.xml <- paste(system(paste("blastcl3 -p blastp -d cdd -m 7 -e 1e-2 -i ", ff), intern=TRUE), collapse="")
+	blast.xml <- paste(system(paste("blastp -remote -db cdd -outfmt 5 -evalue 1e-2 -query ", ff), intern=TRUE), collapse="")
 	#Creates an R treestructure from the XML-output given by blastcl3
 	blast.tree <- xmlInternalTreeParse(blast.xml, asText=TRUE)
 	#Collects the information of interest from the tree

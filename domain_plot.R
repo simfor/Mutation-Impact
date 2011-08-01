@@ -77,8 +77,10 @@ domain_visualization <- function(pattern, subject, dist, domains){
     		info <- ""
     		i <- 1
     		for(dom_info in domains$all_domain_pos){
-    			if(ReturnVal %in% which(dom_info==1))
-    				info <- paste(info, domains$domain_description[[i]], sep="\n\n")
+    			if(ReturnVal %in% which(dom_info==1)){
+    				this_domain <- paste(domains$domain_IDs[[i]], domains$domain_description[[i]], sep=":\n")
+    				info <- paste(info, this_domain, sep="\n\n")
+    			}
     			i <- i+1
     		}
     		if(info=="")
