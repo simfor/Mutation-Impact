@@ -13,14 +13,14 @@ Main <- function(ff1, ff2){
 	aligned <- Align(protA[[1]]$seq, protB[[1]]$seq)
 	
 	#Retrieves the secondary structure for protA
-#	print("Retrieving secondary structure", quote=FALSE)
-#	protA_SecondaryStructure <- SecStructure(protA[[1]]$seq, strsplit(toString(pattern(aligned)), "")[[1]] )
-	
-	#Calculates the weight vector
-	W <- Weight(protA_SecondaryStructure[[1]], protA_SecondaryStructure[[2]]$PSIPRED$ConfidenceScore)
-	
+	print("Retrieving secondary structure", quote=FALSE)
+	protA_SecondaryStructure <- SecStructure(protA[[1]]$seq, strsplit(toString(pattern(aligned)), "")[[1]] )
+		
 	#Calculates the distance between the two sequences
-	dist <- Distance(toString(pattern(aligned)), toString(subject(aligned)), W)
+	D <- Distance(toString(pattern(aligned)), toString(subject(aligned)))
+	
+	#Calculates the weight matrix and returns the different distance scores
+	dist <- Weight(protA_SecondaryStructure[[1]], protA_SecondaryStructure[[2]]$PSIPRED$ConfidenceScore, D)
 	
 	#Looks for conserved domains in protA
 	print("Looking for conserved domains", quote=FALSE)
@@ -57,20 +57,17 @@ Distance <- function(seqA, seqB, W){
 	As <- rbind(seqA_RADA880102, seqA_FAUJ880103, seqA_ZIMJ680104, seqA_GRAR740102, seqA_CRAJ730103, seqA_BURA740101, seqA_CHAM820102)
 	Bs <- rbind(seqB_RADA880102, seqB_FAUJ880103, seqB_ZIMJ680104, seqB_GRAR740102, seqB_CRAJ730103, seqB_BURA740101, seqB_CHAM820102)
 
-	#Calculates the absolute distance matrix
-	D <- abs(As-Bs)
+	#Calculates the distance matrix
+	D <- As-Bs
 	
 	#Sets all NA elements in D to a default distance. These values corresponds to gaps in the aligned sequences
-	D[is.na(D)] <- 1
-
-	#Calculates the distance scores
-	property_distances <- t(t(D)*W)
-	property_scores <- rowSums(property_distances) #sqrt(rowSums(t(t(D^2)*W)))
-	merged_prop_distances <- colSums(property_distances)
-	merged_score <- sum(merged_prop_distances) #sqrt(sum(t(t(merged_prop_distances^2))))
-	TotalScore <- sqrt(sum(t(D^2)*W))
+	D[is.na(D)] <- 0
 	
-	list(property_distances=property_distances, property_scores=property_scores, merged_prop_distances=merged_prop_distances, merged_score=merged_score, TotalScore=TotalScore)
+	#Normalizes the distances
+	D <- scale(D)
+	D[is.nan(D)] <- 0
+
+	D
 }
 
 SecStructure <- function(seq, seq_align){
@@ -95,19 +92,30 @@ SecStructure <- function(seq, seq_align){
 	list(seq_2D, Structure[[1]])
 }
 
-Weight <- function(Structure, Confidence){
+Weight <- function(Structure, Confidence, D){
 	#The function takes a a string vector for the protein secondary structure and a vector with confidence scores as arguments. 
 	#It returns a vector with weights for each position in the AA-sequence
-	weight <- rep(1,length(Structure))
+#	weight <- rep(1,length(Structure))
+	W <- matrix(1,nrow=dim(D)[1],ncol=dim(D)[2])
 	position_nr <- 1
 	gap <- 0
 
 	for(position in Structure){
-		if((position == 'H' || position == 'E') && Confidence[position_nr - gap] > 5 ){
-			weight[position_nr] <- 1.5
+		if(position == 'E' && Confidence[position_nr - gap] > 5 ){
+			W[,position_nr] <- 1.5
+		}
+		else if(position == 'H' && Confidence[position_nr - gap] > 5 ){
+			W[1:5,position_nr] <- 1.2
+			W[7,position_nr] <- 1.2
+			
+			#The weight for "Normalized frequency of alpha-helix"
+			if(D[6,position_nr]>=0)
+				W[6,position_nr] <- 1
+			else
+				W[6,position_nr] <- 1.5
 		}
 		else if(position == '-'){ #Penalty for insertion in mutated seq
-			weight[position_nr] <- 1.3
+			W[position_nr] <- 1
 			gap <- gap + 1
 		}
 #		else{
@@ -115,7 +123,16 @@ Weight <- function(Structure, Confidence){
 #		}
 		position_nr <- position_nr + 1
 	}
-	weight
+#	W
+	
+	#Calculates the distance scores
+	property_distances <- D*W
+	property_scores <- rowSums(property_distances) #sqrt(rowSums(t(t(D^2)*W)))
+	merged_prop_distances <- colSums(abs(D)*W)
+	merged_score <- sum(merged_prop_distances) #sqrt(sum(t(t(merged_prop_distances^2))))
+	TotalScore <- sqrt(sum(D^2*W))
+	
+	list(property_distances=property_distances, property_scores=property_scores, merged_prop_distances=merged_prop_distances, merged_score=merged_score, TotalScore=TotalScore)
 }
 
 Align <- function(seqA, seqB){
@@ -129,11 +146,12 @@ Align <- function(seqA, seqB){
 
 Conserved_domains <- function(ff, seq_align){
 	#Performs a blast search using the program blastcl3
-	blast.xml <- paste(system(paste("blastcl3 -p blastp -d cdd -m 7 -e 1e-2 -i ", ff), intern=TRUE), collapse="")
+	blast.xml <- paste(system(paste("blastp -remote -db cdd -outfmt 5 -evalue 1e-2 -query ", ff), intern=TRUE), collapse="")
 	#Creates an R treestructure from the XML-output given by blastcl3
 	blast.tree <- xmlInternalTreeParse(blast.xml, asText=TRUE)
 	#Collects the information of interest from the tree
 	domain_IDs <- xpathSApply(blast.tree, "//Hit/Hit_id", xmlValue)
+	domain_description <- xpathSApply(blast.tree, "//Hit/Hit_def", xmlValue)
 	domain_from <- as.numeric(xpathSApply(blast.tree, "//Hit/Hit_hsps/Hsp/Hsp_query-from", xmlValue))
 	domain_to <- as.numeric(xpathSApply(blast.tree, "//Hit/Hit_hsps/Hsp/Hsp_query-to", xmlValue))
 	e_value <- as.numeric(xpathSApply(blast.tree, "//Hit/Hit_hsps/Hsp/Hsp_evalue", xmlValue))
@@ -196,5 +214,6 @@ Conserved_domains <- function(ff, seq_align){
 		it_number <- it_number + 1
 	}
 	
-	list(domain_IDs=domain_IDs, domain_pos=domain_pos, domain_from=domain_from, domain_to=domain_to, e_value=e_value, conflict=conflict, all_domain_pos=all_domain_pos)
+	#Returns a list with the information of interest
+	list(domain_IDs=domain_IDs, domain_description=domain_description, domain_pos=domain_pos, domain_from=domain_from, domain_to=domain_to, e_value=e_value, conflict=conflict, all_domain_pos=all_domain_pos)
 }
