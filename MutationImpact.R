@@ -1,16 +1,15 @@
 library(BioSeqClass)
 library(Biostrings)
-#library(gplots)
 library(tkrplot)
 library(XML)
 
-Main <- function(ff1, ff2){
+MutationImpact <- function(ff1, ff2){
 	protA <- readFASTA(ff1, strip.descs=TRUE)
 	protB <- readFASTA(ff2, strip.descs=TRUE)
 	
 	#Aligns the two sequences
 	print("Aligning sequences", quote=FALSE)
-	aligned <- Align(protA[[1]]$seq, protB[[1]]$seq)
+	aligned <- pairwiseAlignment(pattern = protA[[1]]$seq, subject = protB[[1]]$seq, type="global", substitutionMatrix = "BLOSUM50", gapOpening = -5, gapExtension = -1)
 	
 	#Retrieves the secondary structure for protA
 	print("Retrieving secondary structure", quote=FALSE)
@@ -28,10 +27,7 @@ Main <- function(ff1, ff2){
 	
 	#Result
 	Visualize(strsplit(toString(pattern(aligned)), "")[[1]], strsplit(toString(subject(aligned)), "")[[1]], dist, protA_SecondaryStructure[[1]], domains)
-	dist
-	
-	#print(aligned)
-	#paste("The distance between the sequences: ", dist)
+	dist	
 }
 
 Distance <- function(seqA, seqB, W){
@@ -95,7 +91,6 @@ SecStructure <- function(seq, seq_align){
 Weight <- function(Structure, Confidence, D){
 	#The function takes a a string vector for the protein secondary structure and a vector with confidence scores as arguments. 
 	#It returns a vector with weights for each position in the AA-sequence
-#	weight <- rep(1,length(Structure))
 	W <- matrix(1,nrow=dim(D)[1],ncol=dim(D)[2])
 	position_nr <- 1
 	gap <- 0
@@ -118,30 +113,17 @@ Weight <- function(Structure, Confidence, D){
 			W[position_nr] <- 1
 			gap <- gap + 1
 		}
-#		else{
-#			weight[position_nr] <- 1
-#		}
 		position_nr <- position_nr + 1
 	}
-#	W
 	
 	#Calculates the distance scores
 	property_distances <- D*W
-	property_scores <- rowSums(property_distances) #sqrt(rowSums(t(t(D^2)*W)))
+	property_scores <- rowSums(property_distances)
 	merged_prop_distances <- colSums(abs(D)*W)
-	merged_score <- sum(merged_prop_distances) #sqrt(sum(t(t(merged_prop_distances^2))))
+	merged_score <- sum(merged_prop_distances)
 	TotalScore <- sqrt(sum(D^2*W))
 	
 	list(property_distances=property_distances, property_scores=property_scores, merged_prop_distances=merged_prop_distances, merged_score=merged_score, TotalScore=TotalScore)
-}
-
-Align <- function(seqA, seqB){
-	aligned <- pairwiseAlignment(pattern = seqA, subject = seqB, type="global", substitutionMatrix = "BLOSUM50", gapOpening = -5, gapExtension = -1)
-	
-#	seqA_align <- strsplit(toString(pattern(aligned)), "")
-#	seqB_align <- strsplit(toString(subject(aligned)), "")
-	
-#	list()
 }
 
 Conserved_domains <- function(ff, seq_align){
@@ -160,58 +142,53 @@ Conserved_domains <- function(ff, seq_align){
 	position_nr <- 1
 	for(position in seq_align){
 		if(position == '-'){
-			it_number <- 1
+			i <- 1
 			for(from in domain_from){
 				if(from > position_nr){
-					domain_from[it_number] <- domain_from[it_number] + 1
+					domain_from[i] <- domain_from[i] + 1
 				}
-				it_number <- it_number + 1
+				i <- i + 1
 			}
-			it_number <- 1
+			i <- 1
 			for(to in domain_to){
 				if(to > position_nr){
-					domain_to[it_number] <- domain_to[it_number] + 1
+					domain_to[i] <- domain_to[i] + 1
 				}
-				it_number <- it_number + 1
+				i <- i + 1
 			}
 		}
 		position_nr <- position_nr + 1
 	}
 	
-	#Creates vectors indicating where the domains are located along the sequence and the domain predictions that overlap. These vectors are used by Visualize() to visualize the domains
+	#Creates vectors indicating where the domains are located along the sequence and the domain predictions that overlap. These vectors are used by Visualize() and Domain_visualization() to visualize the domains
 	domain_pos <- rep(0, length(seq_align))
 	conflict <- rep(0, length(domain_from))
 	all_domain_pos <- list()
-	it_number <- 1
+	i <- 1
 	for(from in domain_from){
 		#Looks for overlaping domains. An overlap can occur in 4 different ways
-		case1 <- domain_from[it_number]<=domain_from & (domain_to[it_number]>domain_from & domain_to[it_number]<domain_to)
-		case2 <- (domain_from[it_number]>domain_from & domain_from[it_number]<domain_to) & domain_to[it_number]>=domain_to
-		case3 <- (domain_from[it_number]>domain_from & domain_from[it_number]<domain_to) & (domain_to[it_number]>domain_from & domain_to[it_number]<domain_to)
-		case4 <- domain_from[it_number]<=domain_from & domain_to[it_number]>=domain_to
+		case1 <- domain_from[i]<=domain_from & (domain_to[i]>domain_from & domain_to[i]<domain_to)
+		case2 <- (domain_from[i]>domain_from & domain_from[i]<domain_to) & domain_to[i]>=domain_to
+		case3 <- (domain_from[i]>domain_from & domain_from[i]<domain_to) & (domain_to[i]>domain_from & domain_to[i]<domain_to)
+		case4 <- domain_from[i]<=domain_from & domain_to[i]>=domain_to
 		overlap <- case1 | case2 | case3 | case4
 		
 		#If overlap occurs, the domain with the lowest e-value is choosen for visualization
 		if(length(which(overlap))>1){
-			conflict[it_number] <- 1 #Indicates that there are conflicting domain predictions
-			if(e_value[it_number] <= min(e_value[which(overlap)])){
-				domain_pos[c(domain_from[it_number]:domain_to[it_number])] <- it_number
+			conflict[i] <- 1 #Indicates that there are conflicting domain predictions
+			if(e_value[i] <= min(e_value[which(overlap)])){
+				domain_pos[c(domain_from[i]:domain_to[i])] <- i
 			}
 		}
 		else{
-			domain_pos[c(domain_from[it_number]:domain_to[it_number])] <- it_number
+			domain_pos[c(domain_from[i]:domain_to[i])] <- i
 		}
 		
-#		if(e_value[it_number] <= min(e_value[which(overlap)])){
-#				domains[c(domain_from[it_number]:domain_to[it_number])] <- it_number
-#		}
-
 		#Creates a list containing one vector for each domain. This is used in the domain visualization to show the domains that are discarded in the the primary visualization because they overlap with a domain that has a lower e-value
-		all_domain_pos[[it_number]] <- rep(0, length(seq_align))
-		all_domain_pos[[it_number]][c(domain_from[it_number]:domain_to[it_number])] <- 1
-#		all_domain_pos[[it_number]][length(seq_align) + 1] <- e_value[it_number] #The last element contains the e-value
+		all_domain_pos[[i]] <- rep(0, length(seq_align))
+		all_domain_pos[[i]][c(domain_from[i]:domain_to[i])] <- 1
 
-		it_number <- it_number + 1
+		i <- i + 1
 	}
 	
 	#Returns a list with the information of interest

@@ -2,7 +2,7 @@ library(tkrplot)
 library(BioSeqClass)
 library(Biostrings)
 
-domain_visualization <- function(pattern, subject, dist, domains){
+Domain_visualization <- function(pattern, subject, dist, domains){
 	tt <- tktoplevel()
 	tkwm.title(tt,"Domain view")
 	left <- tclVar(1)
@@ -12,28 +12,21 @@ domain_visualization <- function(pattern, subject, dist, domains){
 		lleft <- as.numeric(tclvalue(left))
 	      	rright <- as.numeric(tclvalue(right))
 	      	x <- c(lleft:rright)
-	      	#par(mfrow=c(2,1))
 	      	layout(matrix(c(1,1,2,2), 2, 2, byrow = TRUE), heights=c(1,2))
 	
-		#The graphical parameters for the distance plot
-		#par(fig=c(0,1,0.7,1), cex=0.7, cex.axis=0.9 )#mar=c(3.0, 3.0, 1.5, 1.5)
 		#Plots the sum of distances
 		plot(x, dist$merged_prop_distances[x], type="l", axes=FALSE, ann=FALSE, xlim=range(x), ylim=c(0, max(dist$merged_prop_distances)), cex=0.7)
 		axis(1, at=min(x):max(x), , cex.axis=0.6)
 		
-		#The graphical parameters for the mutated sequence
-		#par(fig=c(0,1,0.71,0.75), cex=0.6, new=TRUE)
 		#Adds the mutated sequence
 		axis(1, at=min(x):max(x), lab=subject[x], line=2, lty=0, cex.axis=0.6)
 		mtext("Mutated sequence", 1, cex=0.6, col="green", line=2)
 	
-		#The graphical parameters for the reference sequence
-		#par(fig=c(0,1,0.7,0.8), cex=0.6, new=TRUE)
 		#Adds the reference sequence
 		axis(1, at=min(x):max(x), lab=pattern[x], line=3, lty=0,  cex.axis=0.6) #tck=-0.1
 		mtext("Ref. sequence", 1, cex=0.6, line=5, col="green")
 		
-		#domains_in_view <- domains$domain_pos[x]
+		#Adds the conserved domains
 		plot(rep(10,length(x)), axes=FALSE, ann=FALSE, col="white", xlim=range(x))
 		i <- 1
 		for(domain in domains$all_domain_pos){
@@ -110,6 +103,7 @@ domain_visualization <- function(pattern, subject, dist, domains){
 	tkgrid.configure(s2, sticky="ew")
 	tkfocus(img)
 	
+	#The modal dialog box which is activated by the domain info button
 	modalDialog <- function(title,question,entryInit,entryWidth=20,returnValOnCancel="ID_CANCEL"){
 		dlg <- tktoplevel()
 		tkwm.deiconify(dlg)
@@ -147,5 +141,3 @@ domain_visualization <- function(pattern, subject, dist, domains){
 		return(ReturnVal)
 	}
 }
-
-

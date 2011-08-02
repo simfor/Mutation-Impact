@@ -2,9 +2,6 @@ library(tkrplot)
 library(BioSeqClass)
 library(Biostrings)
 
-#pattern <- strsplit(toString(pattern(align_O00198_insert)), "")[[1]]
-#subject <- strsplit(toString(subject(align_O00198_insert)), "")[[1]]
-
 Visualize <- function(pattern, subject, dist, sec_structure, domains){
 
 	tt <- tktoplevel()
@@ -28,7 +25,6 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 	
 		axis(1, at=min(x):max(x))
 		axis(2, at=round(min(dist$property_distances),digits=2):round(max(dist$merged_prop_distances), digits=2))
-#		title(xlab="Position", col.lab=rgb(0,0.5,0))
 		title(ylab="Distance", col.lab=rgb(0,0.5,0))
 		
 		#Adds the different distances to the plot
@@ -41,25 +37,19 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		lines(x, dist$property_distances[7,][x], lty=2, col=plot_colors[8])
 
 		#The distance between the two legends
-		x_legend2 <- length(x)/3
+		legend_space <- length(x)/3
 		
-		legend(lleft, max(dist$merged_prop_distances), plot_names, cex=0.8, col=plot_colors, title="Properties", lty=c(1,2,2,2,2,2,2,2), bty="n") #"topleft"
-		legend(lleft + x_legend2, max(dist$merged_prop_distances), c(dist$merged_score, dist$property_scores), title="Total", cex=0.8, bty="n") #"topright"
+		legend(lleft, max(dist$merged_prop_distances), plot_names, cex=0.8, col=plot_colors, title="Properties", lty=c(1,2,2,2,2,2,2,2), bty="n")
+		legend(lleft + legend_space, max(dist$merged_prop_distances), c(dist$merged_score, dist$property_scores), title="Total", cex=0.8, bty="n")
 
-		#The graphical parameters for the mutated sequence
-#		par(fig=c(0,1,0.71,0.75), cex=0.6, new=TRUE)
 		#Adds the mutated sequence
 		axis(1, at=min(x):max(x), lab=subject[x], line=2, lty=0)
 		mtext("Mutated sequence", 1, cex=0.6, col="green", line=2)
 	
-		#The graphical parameters for the reference sequence
-#		par(fig=c(0,1,0.7,0.8), cex=0.6, new=TRUE)
 		#Adds the reference sequence
 		axis(1, at=min(x):max(x), lab=pattern[x], line=3, lty=0) #tck=-0.1
 		mtext("Ref. sequence", 1, cex=0.6, line=5, col="green")
 		
-		#The graphical parameters for the 2D structure
-#		par(fig=c(0,1,0,0.1), cex=0.6, new=TRUE)#col.lab="blue"
 		#Adds the 2D structure
 		axis(1, at=min(x):max(x), lab=sec_structure[x], line=5, col.lab="blue", lty=0) #tck=-0.1
 		mtext("2D structure", 1, cex=0.6, line=7, col="red")
@@ -106,7 +96,7 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		dev.off()
 	}
 	domain_button <- function(...){
-		domain_visualization(pattern, subject, dist, domains)
+		Domain_visualization(pattern, subject, dist, domains)
 	}
 
 	#Creates the widgets
