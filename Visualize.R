@@ -1,7 +1,3 @@
-library(tkrplot)
-library(BioSeqClass)
-library(Biostrings)
-
 Visualize <- function(pattern, subject, dist, sec_structure, domains){
 
 	tt <- tktoplevel()
@@ -72,17 +68,17 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 	}
 
 	scroll <- function(...){
-		tkrreplot(img)
+		tkrplot::tkrreplot(img)
 	}
 	right_button <- function(...){
 		tclvalue(left) <- as.character(as.numeric(tclvalue(left)) + 10)
 		tclvalue(right) <- as.character(as.numeric(tclvalue(right)) + 10)
-		tkrreplot(img)
+		tkrplot::tkrreplot(img)
 	}
 	left_button <- function(...){
 		tclvalue(left) <- as.character(as.numeric(tclvalue(left)) - 10)
 		tclvalue(right) <- as.character(as.numeric(tclvalue(right)) - 10)
-		tkrreplot(img)
+		tkrplot::tkrreplot(img)
 	}
 	save_button <- function(...){
 		fileName<-tclvalue(tkgetSaveFile())
@@ -100,7 +96,7 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 	}
 
 	#Creates the widgets
-	img <- tkrplot(tt, Visualize_plot, vscale=1.05, hscale=2.5) 
+	img <- tkrplot::tkrplot(tt, Visualize_plot, vscale=1.05, hscale=2.5) 
 	s1 <- tkscale(tt, command=scroll, from=1, to=length(dist$merged_prop_distances), variable=left, orient="horiz",label='left')
 	s2 <- tkscale(tt, command=scroll, from=1, to=length(dist$merged_prop_distances), variable=right, orient="horiz",label='right')
 	b1 <- tkbutton(tt, text='->', command=right_button)
