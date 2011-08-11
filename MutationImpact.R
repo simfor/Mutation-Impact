@@ -3,7 +3,7 @@ library(Biostrings)
 library(tkrplot)
 library(XML)
 
-MutationImpact <- function(ff1, ff2){
+MutationImpact <- function(ff1, ff2, secstr=TRUE, dom=TRUE){
 	protA <- readFASTA(ff1, strip.descs=TRUE)
 	protB <- readFASTA(ff2, strip.descs=TRUE)
 	
@@ -12,9 +12,13 @@ MutationImpact <- function(ff1, ff2){
 	aligned <- pairwiseAlignment(pattern = protA[[1]]$seq, subject = protB[[1]]$seq, type="global", substitutionMatrix = "BLOSUM50", gapOpening = -5, gapExtension = -1)
 	
 	#Retrieves the secondary structure for protA
-	print("Retrieving secondary structure", quote=FALSE)
-	protA_SecondaryStructure <- SecStructure(protA[[1]]$seq, strsplit(toString(pattern(aligned)), "")[[1]] )
-		
+	if(secstr==TRUE){
+		print("Retrieving secondary structure", quote=FALSE)
+		protA_SecondaryStructure <- SecStructure(protA[[1]]$seq, strsplit(toString(pattern(aligned)), "")[[1]] )
+	}
+	else
+		protA_SecondaryStructure <- list("", PSIPRED=list(ConfidenceScore=0))
+	
 	#Calculates the distance between the two sequences
 	D <- Distance(toString(pattern(aligned)), toString(subject(aligned)))
 	
@@ -22,8 +26,12 @@ MutationImpact <- function(ff1, ff2){
 	dist <- Weight(protA_SecondaryStructure[[1]], protA_SecondaryStructure[[2]]$PSIPRED$ConfidenceScore, D)
 	
 	#Looks for conserved domains in protA
-	print("Looking for conserved domains", quote=FALSE)
-	domains <- Conserved_domains(ff1, strsplit(toString(pattern(aligned)), "")[[1]])
+	if(dom==TRUE){
+		print("Looking for conserved domains", quote=FALSE)
+		domains <- Conserved_domains(ff1, strsplit(toString(pattern(aligned)), "")[[1]])
+	}
+	else
+		domains <- list(domain_IDs="", domain_description="", domain_pos=rep(0, length(strsplit(toString(pattern(aligned)), "")[[1]])), domain_from="", domain_to="", e_value="", conflict="", all_domain_pos=0)
 	
 	#Result
 	Visualize(strsplit(toString(pattern(aligned)), "")[[1]], strsplit(toString(subject(aligned)), "")[[1]], dist, protA_SecondaryStructure[[1]], domains)
