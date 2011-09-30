@@ -12,7 +12,7 @@ MutationImpact <- function(ff1, ff2, secstr=TRUE, dom=TRUE){
 	aligned <- pairwiseAlignment(pattern = protA[[1]]$seq, subject = protB[[1]]$seq, type="global", substitutionMatrix = "BLOSUM50", gapOpening = -5, gapExtension = -1)
 	
 	#Retrieves the secondary structure for protA
-	if(secstr==TRUE){
+	if(secstr){
 		print("Retrieving secondary structure", quote=FALSE)
 		protA_SecondaryStructure <- SecStructure(protA[[1]]$seq, strsplit(toString(pattern(aligned)), "")[[1]] )
 	}
@@ -26,7 +26,7 @@ MutationImpact <- function(ff1, ff2, secstr=TRUE, dom=TRUE){
 	dist <- Weight(protA_SecondaryStructure[[1]], protA_SecondaryStructure[[2]]$PSIPRED$ConfidenceScore, D)
 	
 	#Looks for conserved domains in protA
-	if(dom==TRUE){
+	if(dom){
 		print("Looking for conserved domains", quote=FALSE)
 		domains <- Conserved_domains(ff1, strsplit(toString(pattern(aligned)), "")[[1]])
 	}
