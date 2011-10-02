@@ -1,4 +1,4 @@
-Visualize <- function(pattern, subject, dist, sec_structure, domains){
+Visualize <- function(pattern, subject, dist, sec_structure, domains, consScores){
 
 	tt <- tktoplevel()
 	tkwm.title(tt,"Mutation impact")
@@ -49,6 +49,10 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains){
 		#Adds the 2D structure
 		axis(1, at=min(x):max(x), lab=sec_structure[x], line=5, col.lab="blue", lty=0) #tck=-0.1
 		mtext("2D structure", 1, cex=0.6, line=7, col="red")
+		
+		#Adds the Conservation Score
+		axis(1, at=min(x):max(x), lab=consScores[x], line=5, col.lab="blue", lty=0) #tck=-0.1
+		mtext("Degree of conservation", 1, cex=0.6, line=7, col="red")
 		
 		#The graphical parameters for the conserved domains
 		par(fig=c(0,1,0,0.09), new=TRUE)

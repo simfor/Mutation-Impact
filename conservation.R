@@ -32,7 +32,7 @@ BlastSearch <- function(seq, eval="1e-2", remote=TRUE, db="refseq_protein", mult
 
 
 
-ConsScore <- function(seq, eval="1e-2", remote=TRUE, db="refseq_protein"){
+ConsScore <- function(seq, eval="1e-4", remote=TRUE, db="refseq_protein"){
 	if(remote){
 		blast <- paste(system(paste("blastp -remote -db ", db, " -outfmt 5 -evalue ", eval, " -query ", seq), intern=TRUE), collapse="")
 	}
@@ -58,7 +58,7 @@ ConsScore <- function(seq, eval="1e-2", remote=TRUE, db="refseq_protein"){
 	#Calls clustal which makes a multiple alignment from the fasta file
 	system(paste("clustalo -i ", Blast_fasta_Name," -o ", ClustalOutName))
 	
-	system(paste("/Users/simon/workspace/SLU/MutImpact_project/MstatX/mstatx -m", ClustalOutName))
-	readLines(paste(ClustalOutName, "stat", sep="."))
+	system(paste("/Users/simon/workspace/SLU/MutImpact_project/MstatX/mstatx -m ", ClustalOutName))
+	Scores <- read.delim(paste(tmp, "stat", sep="."))
 }
 

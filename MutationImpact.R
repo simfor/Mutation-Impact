@@ -3,7 +3,7 @@ library(Biostrings)
 library(tkrplot)
 library(XML)
 
-MutationImpact <- function(ff1, ff2, secstr=TRUE, dom=TRUE){
+MutationImpact <- function(ff1, ff2, secstr=TRUE, dom=TRUE, consScore=TRUE){
 	protA <- readFASTA(ff1, strip.descs=TRUE)
 	protB <- readFASTA(ff2, strip.descs=TRUE)
 	
@@ -33,8 +33,12 @@ MutationImpact <- function(ff1, ff2, secstr=TRUE, dom=TRUE){
 	else
 		domains <- list(domain_IDs="", domain_description="", domain_pos=rep(0, length(strsplit(toString(pattern(aligned)), "")[[1]])), domain_from="", domain_to="", e_value="", conflict="", all_domain_pos=0)
 	
+	if(consScore){
+		print("Blasting and calculating degree of conservation", quote=FALSE)
+		Scores <- ConsScore(ff1)
+	}
 	#Result
-	Visualize(strsplit(toString(pattern(aligned)), "")[[1]], strsplit(toString(subject(aligned)), "")[[1]], dist, protA_SecondaryStructure[[1]], domains)
+	Visualize(strsplit(toString(pattern(aligned)), "")[[1]], strsplit(toString(subject(aligned)), "")[[1]], dist, protA_SecondaryStructure[[1]], domains, Scores[[2]])
 	dist	
 }
 
