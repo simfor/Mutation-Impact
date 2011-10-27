@@ -11,8 +11,8 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains, consScores
 	      	rright <- as.numeric(tclvalue(right))
 		
 		x <- c(lleft:rright)
-		plot_colors <- c("black","blue","red","forestgreen","yellow","green","magenta","burlywood3")
-		plot_names <- c("Sum of all properties","Transfer free energy from octanol to water", "Normalized van der Waals volume", "Isoelectric point", "Polarity", "Normalized frequency of turn", "Normalized frequency of alpha-helix", "Free energy of solution in water")
+		plot_colors <- c("black","blue","red","forestgreen","yellow","green","magenta","burlywood3","royalblue")
+		plot_names <- c("Sum of all properties","Transfer free energy from octanol to water", "Normalized van der Waals volume", "Isoelectric point", "Polarity", "Normalized frequency of turn", "Normalized frequency of alpha-helix", "Free energy of solution in water","Degree of conservation")
 		
 		#The graphical parameters for the distance plot
 		par(cex=0.7, cex.axis=0.9, mar=c(12, 4.1, 4.1, 2.1))
@@ -31,11 +31,14 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains, consScores
 		lines(x, dist$property_distances[5,][x], lty=2, col=plot_colors[6])
 		lines(x, dist$property_distances[6,][x], lty=2, col=plot_colors[7])
 		lines(x, dist$property_distances[7,][x], lty=2, col=plot_colors[8])
+		
+		#Adds the Conservation Score
+		lines(x, consScores[x], lty=5, col=plot_colors[9])
 
 		#The distance between the two legends
 		legend_space <- length(x)/3
 		
-		legend(lleft, max(dist$merged_prop_distances), plot_names, cex=0.8, col=plot_colors, title="Properties", lty=c(1,2,2,2,2,2,2,2), bty="n")
+		legend(lleft, max(dist$merged_prop_distances), plot_names, cex=0.8, col=plot_colors, title="Properties", lty=c(1,2,2,2,2,2,2,2,5), bty="n")
 		legend(lleft + legend_space, max(dist$merged_prop_distances), c(dist$merged_score, dist$property_scores), title="Total", cex=0.8, bty="n")
 
 		#Adds the mutated sequence
@@ -51,8 +54,8 @@ Visualize <- function(pattern, subject, dist, sec_structure, domains, consScores
 		mtext("2D structure", 1, cex=0.6, line=7, col="red")
 		
 		#Adds the Conservation Score
-		axis(1, at=min(x):max(x), lab=consScores[x], line=5, col.lab="blue", lty=0) #tck=-0.1
-		mtext("Degree of conservation", 1, cex=0.6, line=7, col="red")
+#		axis(1, at=min(x):max(x), lab=consScores[x], line=5, col.lab="blue", lty=0) #tck=-0.1
+#		mtext("Degree of conservation", 1, cex=0.6, line=7, col="red")
 		
 		#The graphical parameters for the conserved domains
 		par(fig=c(0,1,0,0.09), new=TRUE)

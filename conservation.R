@@ -1,4 +1,4 @@
-BConsScore <- function(seq, eval="1e-4", remote=TRUE, db="refseq_protein"){
+ConsScore <- function(seq, eval="1e-4", remote=TRUE, db="refseq_protein"){
 	if(remote){
 		blast.xml <- paste(system(paste("blastp -remote -db ", db, " -outfmt 5 -evalue ", eval, " -query ", seq), intern=TRUE), collapse="")
 	}
