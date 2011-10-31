@@ -3,7 +3,7 @@ library(Biostrings)
 library(tkrplot)
 library(XML)
 
-MutationImpact <- function(ff1, ff2, secstr=TRUE, dom=TRUE, consScore=TRUE, secstr_remote=TRUE, blast_db_path){
+MutationImpact <- function(ff1, ff2, secstr=TRUE, dom=TRUE, consScore=TRUE, secstr_remote=TRUE, blast_db_path, psipred_data_dir){
 	protA <- readFASTA(ff1, strip.descs=TRUE)
 	protB <- readFASTA(ff2, strip.descs=TRUE)
 	
@@ -14,7 +14,7 @@ MutationImpact <- function(ff1, ff2, secstr=TRUE, dom=TRUE, consScore=TRUE, secs
 	#Retrieves the secondary structure for protA
 	if(secstr){
 		print("Retrieving secondary structure", quote=FALSE)
-		protA_SecondaryStructure <- SecStructure(ff1, strsplit(toString(pattern(aligned)), "")[[1]], secstr_remote, blast_db_path)
+		protA_SecondaryStructure <- SecStructure(ff1, strsplit(toString(pattern(aligned)), "")[[1]], secstr_remote, blast_db_path, psipred_data_dir)
 	}
 	else
 		protA_SecondaryStructure <- list("", PSIPRED=list(ConfidenceScore=0))
@@ -78,32 +78,27 @@ Distance <- function(seqA, seqB, W){
 	D
 }
 
-SecStructure <- function(ff, seq_align, secstr_remote, blast_db_path){
+SecStructure <- function(ff, seq_align, secstr_remote, blast_db_path, psipred_data_dir){
 	#The function predicts 2D-structure from seq. It returns a 2D-structure vector with inserted gaps matching those in seq_align
 	if(secstr_remote){
 		Structure <- predictPROTEUS(ff[[1]]$seq, proteus2.organism="euk")
 	}
 	else{
 		tmp <- tempfile()
-		runpsipredName <- paste(tmp, "psipred", sep = ".")
-		# <- paste(tmp, "psipred", sep = ".")
+		runpsipredName <- paste(tmp, "pl", sep = ".")
 		
-		#Makes and executes the runpsipred-bashscript
-		write("#!/bin/tcsh", file = runpsipredName, append = TRUE)
-		write(paste("set dbname = ", blast_db_path, sep = ""), file = runpsipredName, append = TRUE)
-		write(readLines("/Users/simon/workspace/psipred321/BLAST+/runpsipredplus.MutImp"), file = runpsipredName, append = TRUE)
-		system(paste("chmod +x ", runpsipredName, sep=""))
-		system(paste(runpsipredName, ff))
-		
-		#print(runpsipredName)
+		#Makes and executes the runpsipred-perlscript
+		write("#!/usr/bin/perl", file = runpsipredName, append = TRUE)
+		write(paste("$db_path = ", "\"", blast_db_path, "\"", ";", sep = ""), file = runpsipredName, append = TRUE)
+		write(paste("$datadir = ", "\"", psipred_data_dir, "\"", ";", sep = ""), file = runpsipredName, append = TRUE)
+		write(readLines("/Users/simon/workspace/SLU/MutImpact_project/Mutation-Impact/runPsipred.pl"), file = runpsipredName, append = TRUE)
+		system(paste("perl", runpsipredName, ff, sep=" "))
 		
 		#Reads the output from psipred
 		psipred_output_name <- paste(gsub(".fasta", replace="", gsub("^.*/", replace="", ff)), "horiz", sep=".") 
 		ConfidenceScore <- strsplit(paste(sub("Conf: +", replace="", grep("Conf: +", readLines(psipred_output_name), value=TRUE)), collapse=""), "")[[1]]
 		SecondaryStructure <- strsplit(paste(sub("Pred: +", replace="", grep("Pred: +", readLines(psipred_output_name), value=TRUE)), collapse=""), "")[[1]]
 		Structure <- list(list(PSIPRED=list(SecondaryStructure=SecondaryStructure, ConfidenceScore=ConfidenceScore)))
-		#print(psipred_output_name)
-		#print(ConfidenceScore)
 	}
 	seq_2D <- as.character((1:length(seq_align)))
 	#confidence <- (1:length(seq_align))
